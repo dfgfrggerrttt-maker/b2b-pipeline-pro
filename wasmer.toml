@@ -1,0 +1,10 @@
+[package]
+name = "b2b-pipeline-pro"
+version = "2.0.0"
+description = "B2B Sales Intelligence & CRM with Human-in-the-loop"
+
+[command]
+start = "deno run --allow-net --allow-env --allow-read index.ts"
+
+[dependencies]
+deno = "^1.40"

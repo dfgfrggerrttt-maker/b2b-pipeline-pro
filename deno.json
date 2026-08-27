@@ -1,0 +1,11 @@
+{
+  "compilerOptions": { "strict": true },
+  "tasks": {
+    "start": "deno run --allow-net --allow-env --allow-read index.ts",
+    "dev": "deno run --allow-net --allow-env --allow-read --watch index.ts"
+  },
+  "imports": {
+    "oak": "https://deno.land/x/oak@v12.6.1/mod.ts",
+    "jwt": "https://deno.land/x/djwt@v3.0.2/mod.ts"
+  }
+}

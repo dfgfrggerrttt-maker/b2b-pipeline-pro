@@ -1,4 +1,4 @@
-// index.ts - Secure B2B Pipeline API with Real Gemini AI Integration
+// index.ts - Production-Ready Secure B2B Pipeline API with Gemini AI
 import postgres from "npm:postgres@3.4.4";
 
 const corsHeaders = {
@@ -16,7 +16,7 @@ if (!dbUrl) {
   throw new Error("DATABASE_URL environment variable is required");
 }
 
-console.log("🔗 Connecting to database...");
+console.log("??? Connecting to database...");
 
 const sql = postgres(dbUrl, {
   ssl: { rejectUnauthorized: false },
@@ -91,7 +91,7 @@ function jsonResponse(data: any, status = 200) {
 
 async function analyzeCompanyWithAI(company: any) {
   if (!GEMINI_API_KEY) {
-    console.warn("⚠️ GEMINI_API_KEY is not set. Using heuristic fallback.");
+    console.warn("⚠️ GEMINI_API_KEY is not set. Using fallback heuristic.");
     return {
       analysis: {
         digital_maturity: 65,
@@ -100,8 +100,8 @@ async function analyzeCompanyWithAI(company: any) {
         swot: { strengths: ["Strong Market Presence"], weaknesses: ["Legacy Tech Stack"], opportunities: ["Digital Scaling"], threats: ["Agile Competitors"] },
       },
       signals: [
-        { type: "TECH_EXPANSION", description: "طلب متزايد على الكفاءات التقنية", confidence: 80 },
-        { type: "MARKET_OPPORTUNITY", description: "فرصة توسع إقليمي سريعة", confidence: 75 },
+        { type: "TECH_EXPANSION", description: "توسع في توظيف المطورين", confidence: 80 },
+        { type: "FUNDING", description: "فرصة توسع واستثمار", confidence: 75 },
       ]
     };
   }
@@ -235,7 +235,7 @@ async function handler(req: Request): Promise<Response> {
       const company = companies[0];
       if (!company) return jsonResponse({ error: "Company not found", debug_id: id }, 404);
 
-      console.log(`🤖 Analyzing company: ${company.name} with Gemini...`);
+      console.log(`??? Analyzing company: ${company.name} with Gemini...`);
       const aiResult = await analyzeCompanyWithAI(company);
 
       await sql`
@@ -298,5 +298,5 @@ async function handler(req: Request): Promise<Response> {
   }
 }
 
-console.log("🚀 B2B Pipeline Pro (AI Powered) starting...");
+console.log("??? B2B Pipeline Pro (AI Powered) starting...");
 Deno.serve(handler);

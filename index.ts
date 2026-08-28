@@ -1,68 +1,71 @@
-// index.ts - Deno Deploy with PostgreSQL (Connection Pooler)
+// index.ts - Deno Deploy with PostgreSQL (Correct Pool Usage)
 import { Pool } from "https://deno.land/x/postgres@v0.19.3/mod.ts";
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
-// استخدام Pool بدلاً من Client مباشر (أكثر استقراراً)
 let pool: Pool;
 
 try {
   const dbUrl = Deno.env.get("DATABASE_URL");
   
   if (!dbUrl) {
-    console.error(" DATABASE_URL is not set!");
     throw new Error("DATABASE_URL environment variable is required");
   }
   
-  // استبدل port 5432 بـ 6543 لاستخدام Pooler
+  // استخدام Pooler (port 6543)
   const poolUrl = dbUrl.replace(":5432/", ":6543/");
   
   pool = new Pool(poolUrl, 10, true);
   console.log("✅ PostgreSQL Pool Connected!");
   
-  // إنشاء الجداول
-  await pool.queryObject`
-    CREATE TABLE IF NOT EXISTS companies (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      tenant_id TEXT,
-      name TEXT,
-      industry TEXT,
-      country TEXT,
-      employee_count INT,
-      website TEXT,
-      score INT,
-      risk_level TEXT,
-      pipeline_status TEXT,
-      analysis JSONB,
-      buying_signals JSONB,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      updated_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `;
-  
-  await pool.queryObject`
-    CREATE TABLE IF NOT EXISTS deals (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      tenant_id TEXT,
-      company_id UUID,
-      service_id TEXT,
-      status TEXT,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `;
-  
-  await pool.queryObject`
-    CREATE TABLE IF NOT EXISTS negotiations (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      deal_id UUID,
-      actor TEXT,
-      action TEXT,
-      new_price INT,
-      notes TEXT,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `;
-  
-  console.log("✅ Tables Created Successfully!");
+  // إنشاء الجداول باستخدام client من pool
+  const client = await pool.connect();
+  try {
+    await client.queryObject`
+      CREATE TABLE IF NOT EXISTS companies (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tenant_id TEXT,
+        name TEXT,
+        industry TEXT,
+        country TEXT,
+        employee_count INT,
+        website TEXT,
+        score INT,
+        risk_level TEXT,
+        pipeline_status TEXT,
+        analysis JSONB,
+        buying_signals JSONB,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
+    
+    await client.queryObject`
+      CREATE TABLE IF NOT EXISTS deals (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tenant_id TEXT,
+        company_id UUID,
+        service_id TEXT,
+        status TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
+    
+    await client.queryObject`
+      CREATE TABLE IF NOT EXISTS negotiations (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        deal_id UUID,
+        actor TEXT,
+        action TEXT,
+        new_price INT,
+        notes TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `;
+    
+    console.log("✅ Tables Created Successfully!");
+  } finally {
+    client.release();
+  }
   
 } catch (error) {
   console.error("❌ Database connection error:", error.message);
@@ -70,6 +73,16 @@ try {
 }
 
 const cors = oakCors({ origin: "*" });
+
+// دالة مساعدة للاستعلامات
+async function query(sql: TemplateStringsArray, ...args: any[]) {
+  const client = await pool.connect();
+  try {
+    return await client.queryObject(sql, ...args);
+  } finally {
+    client.release();
+  }
+}
 
 async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
@@ -80,14 +93,14 @@ async function handler(req: Request): Promise<Response> {
   // Health Check
   if (method === "GET" && url.pathname === "/health") {
     try {
-      await pool.queryObject`SELECT 1`;
+      await query`SELECT 1`;
       return new Response(JSON.stringify({ 
         status: "ok", 
         version: "3.0.0", 
         storage: "PostgreSQL (Supabase Pooler)",
         db_connected: true 
       }), { headers: { "Content-Type": "application/json" } });
-    } catch (error) {
+    } catch (error: any) {
       return new Response(JSON.stringify({ 
         status: "error", 
         error: error.message 
@@ -101,7 +114,7 @@ async function handler(req: Request): Promise<Response> {
       const body = await req.json();
       const score = 90;
       
-      const result = await pool.queryObject`
+      const result = await query`
         INSERT INTO companies (tenant_id, name, industry, country, employee_count, website, score, risk_level, pipeline_status)
         VALUES ('tenant_1', ${body.name}, ${body.industry}, ${body.country}, ${body.employee_count}, ${body.website}, ${score}, 'LOW', 'DISCOVERED')
         RETURNING *
@@ -121,7 +134,7 @@ async function handler(req: Request): Promise<Response> {
   if (method === "POST" && url.pathname.startsWith("/api/v1/companies/") && url.pathname.endsWith("/analyze")) {
     const id = url.pathname.split("/")[5];
     
-    const companyRes = await pool.queryObject`SELECT * FROM companies WHERE id = ${id}`;
+    const companyRes = await query`SELECT * FROM companies WHERE id = ${id}`;
     const company = companyRes.rows[0];
 
     if (!company) {
@@ -142,7 +155,7 @@ async function handler(req: Request): Promise<Response> {
       { type: "FUNDING", description: "احتمال حصول على تمويل", confidence: 70 }
     ];
 
-    await pool.queryObject`
+    await query`
       UPDATE companies 
       SET analysis = ${JSON.stringify(analysis)}, buying_signals = ${JSON.stringify(signals)}, updated_at = NOW()
       WHERE id = ${id}
@@ -157,7 +170,7 @@ async function handler(req: Request): Promise<Response> {
   if (method === "POST" && url.pathname === "/api/v1/deals") {
     try {
       const body = await req.json();
-      const result = await pool.queryObject`
+      const result = await query`
         INSERT INTO deals (tenant_id, company_id, service_id, status)
         VALUES ('tenant_1', ${body.company_id}, ${body.service_id}, 'DISCOVERED')
         RETURNING *
@@ -177,7 +190,7 @@ async function handler(req: Request): Promise<Response> {
     const dealId = url.pathname.split("/")[5];
     const body = await req.json();
     
-    await pool.queryObject`
+    await query`
       INSERT INTO negotiations (deal_id, actor, action, new_price, notes)
       VALUES (${dealId}, 'USER', ${body.action}, ${body.new_price}, ${body.notes})
     `;
@@ -190,7 +203,7 @@ async function handler(req: Request): Promise<Response> {
   // Negotiation Summary
   if (method === "GET" && url.pathname.startsWith("/api/v1/deals/") && url.pathname.endsWith("/negotiation-summary")) {
     const dealId = url.pathname.split("/")[5];
-    const historyRes = await pool.queryObject`
+    const historyRes = await query`
       SELECT * FROM negotiations WHERE deal_id = ${dealId} ORDER BY created_at ASC
     `;
     

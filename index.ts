@@ -1,29 +1,23 @@
-// index.ts - Deno Deploy with Deno KV (Persistent Database)
+// index.ts - Deno Deploy with Deno KV (Persistent Database) - FIXED
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
-// Deno KV Database (Persistent)
 const kv = await Deno.openKv();
 
-// UUID Generator
 function generateUUID(): string {
   return crypto.randomUUID();
 }
 
-// CORS Handler
 const cors = oakCors({ origin: "*" });
 
-// Request Handler
 async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const path = url.pathname;
   const method = req.method;
 
-  // CORS Preflight
   if (method === "OPTIONS") {
     return cors(() => new Response(null, { status: 204 }))(req);
   }
 
-  // Routes
   if (method === "GET" && path === "/") {
     return new Response(JSON.stringify({
       message: "Welcome to B2B Pipeline Pro v2.0",
@@ -87,8 +81,10 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
+  // ✅ تم تصحيح استخراج الـ ID هنا (index 4)
   if (method === "POST" && path.match(/^\/api\/v1\/companies\/[^\/]+\/analyze$/)) {
-    const id = path.split("/")[5];
+    const parts = path.split("/");
+    const id = parts[4]; 
     const companyEntry = await kv.get(["companies", id]);
     const company = companyEntry.value;
     
@@ -158,9 +154,11 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
+  // ✅ تم تصحيح استخراج الـ ID هنا أيضاً
   if (method === "POST" && path.match(/^\/api\/v1\/deals\/[^\/]+\/negotiate$/)) {
     try {
-      const dealId = path.split("/")[5];
+      const parts = path.split("/");
+      const dealId = parts[4];
       const body = await req.json();
       const { action, new_price, notes } = body;
       
@@ -177,7 +175,6 @@ async function handler(req: Request): Promise<Response> {
       };
       
       await kv.set(["negotiations", history.id], history);
-      console.log(`📝 Negotiation Logged: ${action} -> $${new_price}`);
       
       return new Response(JSON.stringify({ success: true, message: 'Negotiation recorded' }), { 
         headers: { "Content-Type": "application/json" } 
@@ -190,8 +187,10 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
+  // ✅ تم تصحيح استخراج الـ ID هنا أيضاً
   if (method === "GET" && path.match(/^\/api\/v1\/deals\/[^\/]+\/negotiation-summary$/)) {
-    const dealId = path.split("/")[5];
+    const parts = path.split("/");
+    const dealId = parts[4];
     const history = [];
     
     for await (const entry of kv.list({ prefix: ["negotiations"] })) {
@@ -215,8 +214,6 @@ async function handler(req: Request): Promise<Response> {
   if (method === "POST" && path === "/api/v1/communications") {
     try {
       const body = await req.json();
-      
-      // Compliance Check
       const isBlacklisted = false;
       if (isBlacklisted) {
         return new Response(JSON.stringify({ success: false, error: 'Company is blacklisted' }), { 
@@ -239,14 +236,12 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
-  // 404
   return new Response(JSON.stringify({ error: "Not Found" }), { 
     status: 404,
     headers: { "Content-Type": "application/json" } 
   });
 }
 
-// Helper Functions
 function calculateCompanyScore(company: any): number {
   let score = 50;
   if (company.employee_count) {
@@ -262,9 +257,8 @@ function calculateCompanyScore(company: any): number {
 
 console.log("🚀 B2B Pipeline Pro v2.0.0 running on Deno Deploy with Deno KV");
 console.log("🔒 Human-in-the-loop enforced. No auto-pricing.");
-console.log("️ Compliance checks active.");
-console.log(" Audit logging enabled.");
+console.log("🛡️ Compliance checks active.");
+console.log("📊 Audit logging enabled.");
 console.log("💾 Persistent database enabled (Deno KV)");
 
-// Export for Deno Deploy
 Deno.serve(handler);

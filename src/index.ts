@@ -15,12 +15,12 @@ if (!dbUrl) {
 
 console.log("🔗 Connecting to database...");
 
-// إعداد الاتصال المتوافق تماماً مع Supabase و Deno Deploy
 const sql = postgres(dbUrl, {
   ssl: { rejectUnauthorized: false },
   max: 5,
   idle_timeout: 20,
-  prepare: false, // الحل السحري لـ Supabase Transaction Pooler
+  prepare: false,
+  fetch_types: false, // يمنع تضارب pg_type_typname_nsp_index
 });
 
 console.log("✅ Database client created");
@@ -79,12 +79,17 @@ async function handler(req: Request): Promise<Response> {
   }
 
   try {
-    await ensureTablesExist();
-
     if (method === "GET" && url.pathname === "/health") {
       await sql`SELECT 1`;
-      return jsonResponse({ status: "ok", version: "3.0.0", storage: "PostgreSQL (Supabase)", db_connected: true });
+      return jsonResponse({
+        status: "ok",
+        version: "3.0.0",
+        storage: "PostgreSQL (Supabase)",
+        db_connected: true,
+      });
     }
+
+    await ensureTablesExist();
 
     if (method === "POST" && url.pathname === "/api/v1/companies") {
       const body = await req.json();
@@ -117,7 +122,7 @@ async function handler(req: Request): Promise<Response> {
       ];
 
       await sql`
-        UPDATE companies 
+        UPDATE companies
         SET analysis = ${sql.json(analysis)}, buying_signals = ${sql.json(signals)}, updated_at = NOW()
         WHERE id = ${id}::uuid
       `;

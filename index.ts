@@ -1,4 +1,4 @@
-// index.ts - Deno Deploy with Deno KV (Persistent Database) - FIXED
+// index.ts - Deno Deploy with Deno KV (Bulletproof Routing)
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
 const kv = await Deno.openKv();
@@ -35,6 +35,7 @@ async function handler(req: Request): Promise<Response> {
     }), { headers: { "Content-Type": "application/json" } });
   }
 
+  // GET Companies
   if (method === "GET" && path === "/api/v1/companies") {
     const companies = [];
     for await (const entry of kv.list({ prefix: ["companies"] })) {
@@ -45,6 +46,7 @@ async function handler(req: Request): Promise<Response> {
     });
   }
 
+  // POST Create Company
   if (method === "POST" && path === "/api/v1/companies") {
     try {
       const body = await req.json();
@@ -75,40 +77,30 @@ async function handler(req: Request): Promise<Response> {
       });
     } catch (error: any) {
       return new Response(JSON.stringify({ success: false, error: error.message }), { 
-        status: 400,
-        headers: { "Content-Type": "application/json" } 
+        status: 400, headers: { "Content-Type": "application/json" } 
       });
     }
   }
 
-  // ✅ تم تصحيح استخراج الـ ID هنا (index 4)
-  if (method === "POST" && path.match(/^\/api\/v1\/companies\/[^\/]+\/analyze$/)) {
+  // ✅ POST Analyze Company (Bulletproof Routing)
+  if (method === "POST" && path.startsWith("/api/v1/companies/") && path.endsWith("/analyze")) {
     const parts = path.split("/");
-    const id = parts[4]; 
+    const id = parts[4]; // "/api/v1/companies/ID/analyze" -> index 4 is ID
+    
     const companyEntry = await kv.get(["companies", id]);
     const company = companyEntry.value;
     
     if (!company) {
       return new Response(JSON.stringify({ error: "Company not found" }), { 
-        status: 404,
-        headers: { "Content-Type": "application/json" } 
+        status: 404, headers: { "Content-Type": "application/json" } 
       });
     }
     
     const analysis = {
       digital_maturity: 60,
-      pain_points: [
-        { problem: "Limited tech adoption", evidence: "Large team, low tech", confidence: 80, source: "analysis" }
-      ],
-      opportunities: [
-        { opportunity: "Digital transformation", potential_service: "consulting", reason: "Growth potential", evidence: "Industry trends", confidence: 75 }
-      ],
-      swot: {
-        strengths: ["Established"],
-        weaknesses: ["Limited tech adoption"],
-        opportunities: ["Digital transformation"],
-        threats: ["Competition"]
-      },
+      pain_points: [{ problem: "Limited tech adoption", evidence: "Large team, low tech", confidence: 80, source: "analysis" }],
+      opportunities: [{ opportunity: "Digital transformation", potential_service: "consulting", reason: "Growth potential", evidence: "Industry trends", confidence: 75 }],
+      swot: { strengths: ["Established"], weaknesses: ["Limited tech adoption"], opportunities: ["Digital transformation"], threats: ["Competition"] },
       analyzed_at: new Date().toISOString()
     };
     
@@ -128,6 +120,7 @@ async function handler(req: Request): Promise<Response> {
     });
   }
 
+  // POST Create Deal
   if (method === "POST" && path === "/api/v1/deals") {
     try {
       const body = await req.json();
@@ -141,21 +134,19 @@ async function handler(req: Request): Promise<Response> {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
-      
       await kv.set(["deals", deal.id], deal);
       return new Response(JSON.stringify({ success: true, data: deal }), { 
         headers: { "Content-Type": "application/json" } 
       });
     } catch (error: any) {
       return new Response(JSON.stringify({ success: false, error: error.message }), { 
-        status: 400,
-        headers: { "Content-Type": "application/json" } 
+        status: 400, headers: { "Content-Type": "application/json" } 
       });
     }
   }
 
-  // ✅ تم تصحيح استخراج الـ ID هنا أيضاً
-  if (method === "POST" && path.match(/^\/api\/v1\/deals\/[^\/]+\/negotiate$/)) {
+  // ✅ POST Negotiate Deal (Bulletproof Routing)
+  if (method === "POST" && path.startsWith("/api/v1/deals/") && path.endsWith("/negotiate")) {
     try {
       const parts = path.split("/");
       const dealId = parts[4];
@@ -181,14 +172,13 @@ async function handler(req: Request): Promise<Response> {
       });
     } catch (error: any) {
       return new Response(JSON.stringify({ success: false, error: error.message }), { 
-        status: 400,
-        headers: { "Content-Type": "application/json" } 
+        status: 400, headers: { "Content-Type": "application/json" } 
       });
     }
   }
 
-  // ✅ تم تصحيح استخراج الـ ID هنا أيضاً
-  if (method === "GET" && path.match(/^\/api\/v1\/deals\/[^\/]+\/negotiation-summary$/)) {
+  // ✅ GET Negotiation Summary (Bulletproof Routing)
+  if (method === "GET" && path.startsWith("/api/v1/deals/") && path.endsWith("/negotiation-summary")) {
     const parts = path.split("/");
     const dealId = parts[4];
     const history = [];
@@ -211,34 +201,17 @@ async function handler(req: Request): Promise<Response> {
     });
   }
 
+  // POST Communications
   if (method === "POST" && path === "/api/v1/communications") {
-    try {
-      const body = await req.json();
-      const isBlacklisted = false;
-      if (isBlacklisted) {
-        return new Response(JSON.stringify({ success: false, error: 'Company is blacklisted' }), { 
-          status: 403,
-          headers: { "Content-Type": "application/json" } 
-        });
-      }
-      
-      return new Response(JSON.stringify({ 
-        status: 'PENDING_APPROVAL', 
-        message: 'Draft saved. Awaiting human approval.' 
-      }), { 
-        headers: { "Content-Type": "application/json" } 
-      });
-    } catch (error: any) {
-      return new Response(JSON.stringify({ success: false, error: error.message }), { 
-        status: 400,
-        headers: { "Content-Type": "application/json" } 
-      });
-    }
+    return new Response(JSON.stringify({ 
+      status: 'PENDING_APPROVAL', 
+      message: 'Draft saved. Awaiting human approval.' 
+    }), { headers: { "Content-Type": "application/json" } });
   }
 
-  return new Response(JSON.stringify({ error: "Not Found" }), { 
-    status: 404,
-    headers: { "Content-Type": "application/json" } 
+  // Fallback 404
+  return new Response(JSON.stringify({ error: "Not Found", path: path }), { 
+    status: 404, headers: { "Content-Type": "application/json" } 
   });
 }
 
@@ -256,9 +229,4 @@ function calculateCompanyScore(company: any): number {
 }
 
 console.log("🚀 B2B Pipeline Pro v2.0.0 running on Deno Deploy with Deno KV");
-console.log("🔒 Human-in-the-loop enforced. No auto-pricing.");
-console.log("🛡️ Compliance checks active.");
-console.log("📊 Audit logging enabled.");
-console.log("💾 Persistent database enabled (Deno KV)");
-
 Deno.serve(handler);

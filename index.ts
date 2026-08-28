@@ -137,7 +137,7 @@ async function analyzeCompanyWithAI(company: any) {
 }`;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -192,7 +192,7 @@ async function handler(req: Request): Promise<Response> {
         status: "ok",
         version: "3.2.0",
         storage: "PostgreSQL (Supabase)",
-        ai_engine: GEMINI_API_KEY ? "Google Gemini 2.5 Flash" : "Fallback Heuristic",
+        ai_engine: GEMINI_API_KEY ? "Google Gemini 3.6 Flash" : "Fallback Heuristic",
         db_connected: true,
       });
     } catch (e: any) {

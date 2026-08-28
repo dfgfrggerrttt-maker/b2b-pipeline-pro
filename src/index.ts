@@ -1,4 +1,4 @@
-// index.ts - Production-Ready Secure B2B Pipeline API
+// index.ts - Secure B2B Pipeline API with Real Gemini AI Integration
 import postgres from "npm:postgres@3.4.4";
 
 const corsHeaders = {
@@ -7,9 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, x-api-key",
 };
 
-// 1. فحص المتغيرات البيئية الإلزامية
+// فحص المتغيرات البيئية الإلزامية
 const dbUrl = Deno.env.get("DATABASE_URL");
-const API_SECRET_KEY = Deno.env.get("API_SECRET_KEY") || "b2b_secret_key_demo_2026";
+const API_SECRET_KEY = Deno.env.get("API_SECRET_KEY") || "b2b_secret_key_prod_9988Supabase1992t";
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 
 if (!dbUrl) {
   console.error("❌ DATABASE_URL is not set!");
@@ -28,7 +29,6 @@ const sql = postgres(dbUrl, {
 
 console.log("✅ Database client created");
 
-// 2. تهيئة الجداول تلقائياً
 let dbInitialized = false;
 async function ensureTablesExist() {
   if (dbInitialized) return;
@@ -90,7 +90,79 @@ function jsonResponse(data: any, status = 200) {
   });
 }
 
-// 3. التحقق الأمني من الـ API Key
+// دالة التحليل الذكي للشركات باستخدام Google Gemini
+async function analyzeCompanyWithAI(company: any) {
+  if (!GEMINI_API_KEY) {
+    console.warn("⚠️ GEMINI_API_KEY is not set. Using fallback heuristic data.");
+    return {
+      analysis: {
+        digital_maturity: 65,
+        pain_points: [{ problem: "Limited cloud migration", evidence: "Legacy stack indicators", confidence: 80 }],
+        opportunities: [{ opportunity: "Cloud architecture overhaul", potential_service: "cloud_consulting", confidence: 85 }],
+        swot: { strengths: ["Strong Market Presence"], weaknesses: ["Legacy Tech Stack"], opportunities: ["Digital Scaling"], threats: ["Agile Competitors"] },
+      },
+      signals: [
+        { type: "TECH_EXPANSION", description: "طلب متزايد على الكفاءات التقنية", confidence: 80 },
+        { type: "MARKET_OPPORTUNITY", description: "فرصة توسع إقليمي سريعة", confidence: 75 },
+      ]
+    };
+  }
+
+  const prompt = `أنت خبير استراتيجي في مبيعات الـ B2B وتحليل الشركات.
+قم بتحليل الشركة التالية بناءً على بياناتها:
+- اسم الشركة: ${company.name}
+- المجال/الصناعة: ${company.industry || "غير محدد"}
+- الدولة: ${company.country || "غير محدد"}
+- عدد الموظفين: ${company.employee_count || "غير محدد"}
+- الموقع الإلكتروني: ${company.website || "غير محدد"}
+
+المطلوب إرجاع كائن JSON حصراً بنفس الهيكل التالي:
+{
+  "analysis": {
+    "digital_maturity": 75,
+    "pain_points": [
+      { "problem": "اسم المشكلة أو التحدي", "evidence": "الدليل أو المؤشر", "confidence": 85 }
+    ],
+    "opportunities": [
+      { "opportunity": "الفرصة المتاحة", "potential_service": "الخدمة المقترحة", "confidence": 80 }
+    ],
+    "swot": {
+      "strengths": ["نقطة قوة 1", "نقطة قوة 2"],
+      "weaknesses": ["نقطة ضعف 1", "نقطة ضعف 2"],
+      "opportunities": ["فرصة 1", "فرصة 2"],
+      "threats": ["تهديد 1", "تهديد 2"]
+    }
+  },
+  "signals": [
+    { "type": "EXPANSION", "description": "وصف مؤشر الشراء باللغة العربية", "confidence": 90 }
+  ]
+}`;
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.2,
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Gemini API Error (${response.status}): ${errText}`);
+  }
+
+  const result = await response.json();
+  const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+  return JSON.parse(rawText);
+}
+
 function authenticate(req: Request): { authorized: boolean; tenantId: string | null } {
   const authHeader = req.headers.get("Authorization");
   const apiKeyHeader = req.headers.get("x-api-key");
@@ -101,31 +173,28 @@ function authenticate(req: Request): { authorized: boolean; tenantId: string | n
   }
 
   if (token && token === API_SECRET_KEY) {
-    // يمكن هنا ربط المفتاح بمستأجر محدد
     return { authorized: true, tenantId: "tenant_default" };
   }
 
   return { authorized: false, tenantId: null };
 }
 
-// 4. معالج الطلبات الرئيسي
 async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const method = req.method;
 
-  // فحص CORS Preflight
   if (method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
-  // السماح بمسار فحص الحالة بدون توثيق
   if (method === "GET" && url.pathname === "/health") {
     try {
       await sql`SELECT 1`;
       return jsonResponse({
         status: "ok",
-        version: "3.1.0",
+        version: "3.2.0",
         storage: "PostgreSQL (Supabase)",
+        ai_engine: GEMINI_API_KEY ? "Google Gemini 2.5 Flash" : "Fallback Engine",
         db_connected: true,
       });
     } catch (e: any) {
@@ -133,7 +202,6 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
-  // تطبيق التوثيق الأمني على باقي المسارات
   const auth = authenticate(req);
   if (!auth.authorized) {
     return jsonResponse({ error: "Unauthorized: Invalid or missing API Key" }, 401);
@@ -144,7 +212,7 @@ async function handler(req: Request): Promise<Response> {
   try {
     await ensureTablesExist();
 
-    // إضافة شركة مع ربطها بالمستأجر
+    // Create Company
     if (method === "POST" && url.pathname === "/api/v1/companies") {
       const body = await req.json();
       if (!body.name) {
@@ -159,7 +227,7 @@ async function handler(req: Request): Promise<Response> {
       return jsonResponse({ success: true, data: company });
     }
 
-    // تحليل الشركة
+    // Analyze Company with Real Gemini AI
     if (method === "POST" && url.pathname.startsWith("/api/v1/companies/") && url.pathname.endsWith("/analyze")) {
       const parts = url.pathname.split("/");
       const id = parts[4];
@@ -169,27 +237,19 @@ async function handler(req: Request): Promise<Response> {
       const company = companies[0];
       if (!company) return jsonResponse({ error: "Company not found", debug_id: id }, 404);
 
-      const analysis = {
-        digital_maturity: 60,
-        pain_points: [{ problem: "Limited tech adoption", evidence: "Large team", confidence: 80 }],
-        opportunities: [{ opportunity: "Digital transformation", potential_service: "consulting", confidence: 75 }],
-        swot: { strengths: ["Established"], weaknesses: ["Tech adoption"], opportunities: ["Growth"], threats: ["Competition"] },
-      };
-      const signals = [
-        { type: "HIRING", description: "توسع في فريق الهندسة", confidence: 85 },
-        { type: "FUNDING", description: "احتمال حصول على تمويل", confidence: 70 },
-      ];
+      console.log(`🤖 Generating real AI analysis for company: ${company.name}`);
+      const aiResult = await analyzeCompanyWithAI(company);
 
       await sql`
-        UPDATE companies
-        SET analysis = ${sql.json(analysis)}, buying_signals = ${sql.json(signals)}, updated_at = NOW()
+        UPDATE companies 
+        SET analysis = ${sql.json(aiResult.analysis)}, buying_signals = ${sql.json(aiResult.signals)}, updated_at = NOW()
         WHERE id = ${id}::uuid AND tenant_id = ${tenantId}
       `;
 
-      return jsonResponse({ success: true, data: { analysis, signals } });
+      return jsonResponse({ success: true, data: aiResult });
     }
 
-    // إنشاء صفقة
+    // Create Deal
     if (method === "POST" && url.pathname === "/api/v1/deals") {
       const body = await req.json();
       if (!body.company_id || !body.service_id) {
@@ -204,7 +264,7 @@ async function handler(req: Request): Promise<Response> {
       return jsonResponse({ success: true, data: deal });
     }
 
-    // تسجيل جولة تفاوض
+    // Negotiate Deal
     if (method === "POST" && url.pathname.startsWith("/api/v1/deals/") && url.pathname.endsWith("/negotiate")) {
       const parts = url.pathname.split("/");
       const dealId = parts[4];
@@ -221,7 +281,7 @@ async function handler(req: Request): Promise<Response> {
       return jsonResponse({ success: true, message: "Negotiation recorded" });
     }
 
-    // ملخص وسجل المفاوضات
+    // Negotiation Summary
     if (method === "GET" && url.pathname.startsWith("/api/v1/deals/") && url.pathname.endsWith("/negotiation-summary")) {
       const parts = url.pathname.split("/");
       const dealId = parts[4];
@@ -240,5 +300,5 @@ async function handler(req: Request): Promise<Response> {
   }
 }
 
-console.log("🚀 B2B Pipeline Pro (Secure Edition) starting...");
+console.log("🚀 B2B Pipeline Pro (AI Powered) starting...");
 Deno.serve(handler);

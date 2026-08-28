@@ -111,3 +111,4 @@ async function handler(req: Request): Promise<Response> {
 
 console.log("🚀 B2B Pipeline Pro running with Smart Serverless Fallback");
 Deno.serve(handler);
+// Force new build trigger: Fri Aug 28 04:11:04 +03 2026

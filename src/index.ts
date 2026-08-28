@@ -1,13 +1,16 @@
-// index.ts - Deno Deploy with postgres.js (Supabase Ready)
+// index.ts - Production-Ready Secure B2B Pipeline API
 import postgres from "npm:postgres@3.4.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-api-key",
 };
 
+// 1. فحص المتغيرات البيئية الإلزامية
 const dbUrl = Deno.env.get("DATABASE_URL");
+const API_SECRET_KEY = Deno.env.get("API_SECRET_KEY") || "b2b_secret_key_demo_2026";
+
 if (!dbUrl) {
   console.error("❌ DATABASE_URL is not set!");
   throw new Error("DATABASE_URL environment variable is required");
@@ -20,11 +23,12 @@ const sql = postgres(dbUrl, {
   max: 5,
   idle_timeout: 20,
   prepare: false,
-  fetch_types: false, // يمنع تضارب pg_type_typname_nsp_index
+  fetch_types: false,
 });
 
 console.log("✅ Database client created");
 
+// 2. تهيئة الجداول تلقائياً
 let dbInitialized = false;
 async function ensureTablesExist() {
   if (dbInitialized) return;
@@ -32,26 +36,42 @@ async function ensureTablesExist() {
   await sql`
     CREATE TABLE IF NOT EXISTS companies (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      tenant_id TEXT, name TEXT, industry TEXT, country TEXT,
-      employee_count INT, website TEXT, score INT, risk_level TEXT,
-      pipeline_status TEXT, analysis JSONB, buying_signals JSONB,
-      created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW()
+      tenant_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      industry TEXT,
+      country TEXT,
+      employee_count INT,
+      website TEXT,
+      score INT DEFAULT 50,
+      risk_level TEXT DEFAULT 'LOW',
+      pipeline_status TEXT DEFAULT 'DISCOVERED',
+      analysis JSONB,
+      buying_signals JSONB,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
     )
   `;
 
   await sql`
     CREATE TABLE IF NOT EXISTS deals (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      tenant_id TEXT, company_id UUID, service_id TEXT,
-      status TEXT, created_at TIMESTAMPTZ DEFAULT NOW()
+      tenant_id TEXT NOT NULL,
+      company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
+      service_id TEXT NOT NULL,
+      status TEXT DEFAULT 'DISCOVERED',
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `;
 
   await sql`
     CREATE TABLE IF NOT EXISTS negotiations (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      deal_id UUID, actor TEXT, action TEXT,
-      new_price INT, notes TEXT, created_at TIMESTAMPTZ DEFAULT NOW()
+      deal_id UUID REFERENCES deals(id) ON DELETE CASCADE,
+      actor TEXT NOT NULL,
+      action TEXT NOT NULL,
+      new_price INT,
+      notes TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `;
 
@@ -70,43 +90,82 @@ function jsonResponse(data: any, status = 200) {
   });
 }
 
+// 3. التحقق الأمني من الـ API Key
+function authenticate(req: Request): { authorized: boolean; tenantId: string | null } {
+  const authHeader = req.headers.get("Authorization");
+  const apiKeyHeader = req.headers.get("x-api-key");
+
+  let token = apiKeyHeader;
+  if (!token && authHeader?.startsWith("Bearer ")) {
+    token = authHeader.split(" ")[1];
+  }
+
+  if (token && token === API_SECRET_KEY) {
+    // يمكن هنا ربط المفتاح بمستأجر محدد
+    return { authorized: true, tenantId: "tenant_default" };
+  }
+
+  return { authorized: false, tenantId: null };
+}
+
+// 4. معالج الطلبات الرئيسي
 async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const method = req.method;
 
+  // فحص CORS Preflight
   if (method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
-  try {
-    if (method === "GET" && url.pathname === "/health") {
+  // السماح بمسار فحص الحالة بدون توثيق
+  if (method === "GET" && url.pathname === "/health") {
+    try {
       await sql`SELECT 1`;
       return jsonResponse({
         status: "ok",
-        version: "3.0.0",
+        version: "3.1.0",
         storage: "PostgreSQL (Supabase)",
         db_connected: true,
       });
+    } catch (e: any) {
+      return jsonResponse({ status: "error", message: e.message }, 500);
     }
+  }
 
+  // تطبيق التوثيق الأمني على باقي المسارات
+  const auth = authenticate(req);
+  if (!auth.authorized) {
+    return jsonResponse({ error: "Unauthorized: Invalid or missing API Key" }, 401);
+  }
+
+  const tenantId = auth.tenantId!;
+
+  try {
     await ensureTablesExist();
 
+    // إضافة شركة مع ربطها بالمستأجر
     if (method === "POST" && url.pathname === "/api/v1/companies") {
       const body = await req.json();
+      if (!body.name) {
+        return jsonResponse({ error: "Company name is required" }, 400);
+      }
+
       const [company] = await sql`
         INSERT INTO companies (tenant_id, name, industry, country, employee_count, website, score, risk_level, pipeline_status)
-        VALUES ('tenant_1', ${body.name}, ${body.industry}, ${body.country}, ${body.employee_count}, ${body.website}, 90, 'LOW', 'DISCOVERED')
+        VALUES (${tenantId}, ${body.name}, ${body.industry || null}, ${body.country || null}, ${body.employee_count || null}, ${body.website || null}, 90, 'LOW', 'DISCOVERED')
         RETURNING *
       `;
       return jsonResponse({ success: true, data: company });
     }
 
+    // تحليل الشركة
     if (method === "POST" && url.pathname.startsWith("/api/v1/companies/") && url.pathname.endsWith("/analyze")) {
       const parts = url.pathname.split("/");
       const id = parts[4];
       if (!id) return jsonResponse({ error: "Company ID is required" }, 400);
 
-      const companies = await sql`SELECT * FROM companies WHERE id = ${id}::uuid`;
+      const companies = await sql`SELECT * FROM companies WHERE id = ${id}::uuid AND tenant_id = ${tenantId}`;
       const company = companies[0];
       if (!company) return jsonResponse({ error: "Company not found", debug_id: id }, 404);
 
@@ -124,34 +183,45 @@ async function handler(req: Request): Promise<Response> {
       await sql`
         UPDATE companies
         SET analysis = ${sql.json(analysis)}, buying_signals = ${sql.json(signals)}, updated_at = NOW()
-        WHERE id = ${id}::uuid
+        WHERE id = ${id}::uuid AND tenant_id = ${tenantId}
       `;
 
       return jsonResponse({ success: true, data: { analysis, signals } });
     }
 
+    // إنشاء صفقة
     if (method === "POST" && url.pathname === "/api/v1/deals") {
       const body = await req.json();
+      if (!body.company_id || !body.service_id) {
+        return jsonResponse({ error: "company_id and service_id are required" }, 400);
+      }
+
       const [deal] = await sql`
         INSERT INTO deals (tenant_id, company_id, service_id, status)
-        VALUES ('tenant_1', ${body.company_id}::uuid, ${body.service_id}, 'DISCOVERED')
+        VALUES (${tenantId}, ${body.company_id}::uuid, ${body.service_id}, 'DISCOVERED')
         RETURNING *
       `;
       return jsonResponse({ success: true, data: deal });
     }
 
+    // تسجيل جولة تفاوض
     if (method === "POST" && url.pathname.startsWith("/api/v1/deals/") && url.pathname.endsWith("/negotiate")) {
       const parts = url.pathname.split("/");
       const dealId = parts[4];
       const body = await req.json();
 
+      if (!body.action) {
+        return jsonResponse({ error: "action is required" }, 400);
+      }
+
       await sql`
         INSERT INTO negotiations (deal_id, actor, action, new_price, notes)
-        VALUES (${dealId}::uuid, 'USER', ${body.action}, ${body.new_price}, ${body.notes})
+        VALUES (${dealId}::uuid, 'USER', ${body.action}, ${body.new_price || null}, ${body.notes || null})
       `;
       return jsonResponse({ success: true, message: "Negotiation recorded" });
     }
 
+    // ملخص وسجل المفاوضات
     if (method === "GET" && url.pathname.startsWith("/api/v1/deals/") && url.pathname.endsWith("/negotiation-summary")) {
       const parts = url.pathname.split("/");
       const dealId = parts[4];
@@ -170,5 +240,5 @@ async function handler(req: Request): Promise<Response> {
   }
 }
 
-console.log("🚀 B2B Pipeline Pro starting...");
+console.log("🚀 B2B Pipeline Pro (Secure Edition) starting...");
 Deno.serve(handler);

@@ -1,4 +1,4 @@
-// index.ts - Deno Deploy with PostgreSQL
+// index.ts - Deno Deploy with PostgreSQL (Direct Connection)
 import { Pool } from "https://deno.land/x/postgres@v0.19.3/mod.ts";
 
 let pool: Pool;
@@ -16,13 +16,15 @@ try {
     throw new Error("DATABASE_URL environment variable is required");
   }
   
-  // استخدام Supabase Transaction Pooler (port 6543)
-  const poolUrl = dbUrl.replace(":5432/", ":6543/");
+  console.log("🔗 Connecting to database...");
   
-  pool = new Pool(poolUrl, 10, true);
+  // ✅ استخدم الرابط مباشرة بدون تغيير المنفذ
+  // Deno Deploy يتصل تلقائياً بشكل صحيح
+  pool = new Pool(dbUrl, 5, true);
+  
   console.log("✅ PostgreSQL Pool Connected!");
   
-  // إنشاء الجداول
+  // اختبار الاتصال وإنشاء الجداول
   const client = await pool.connect();
   try {
     await client.queryObject`
@@ -74,10 +76,10 @@ try {
   
 } catch (error: any) {
   console.error("❌ Database connection error:", error.message);
+  console.error("Full error:", error);
   throw error;
 }
 
-// دالة مساعدة لتنفيذ الاستعلامات وإدارة الـ Client تلقائياً
 async function query(strings: TemplateStringsArray, ...values: any[]) {
   const client = await pool.connect();
   try {
@@ -87,7 +89,6 @@ async function query(strings: TemplateStringsArray, ...values: any[]) {
   }
 }
 
-// دالة مساعدة لتوحيد إرجاع ردود JSON مع ترويسات CORS
 function jsonResponse(data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -102,19 +103,17 @@ async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const method = req.method;
 
-  // التعامل مع طلبات الـ Preflight لـ CORS
   if (method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
-  // Health Check
   if (method === "GET" && url.pathname === "/health") {
     try {
       await query`SELECT 1`;
       return jsonResponse({ 
         status: "ok", 
         version: "3.0.0", 
-        storage: "PostgreSQL (Supabase Pooler)",
+        storage: "PostgreSQL (Direct Connection)",
         db_connected: true 
       });
     } catch (error: any) {
@@ -122,7 +121,6 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
-  // Create Company
   if (method === "POST" && url.pathname === "/api/v1/companies") {
     try {
       const body = await req.json();
@@ -140,10 +138,9 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
-  // Analyze Company
   if (method === "POST" && url.pathname.startsWith("/api/v1/companies/") && url.pathname.endsWith("/analyze")) {
     try {
-      const id = url.pathname.split("/")[4]; // التصحيح: index 4 للـ ID
+      const id = url.pathname.split("/")[4];
       
       const companyRes = await query`SELECT * FROM companies WHERE id = ${id}::uuid`;
       const company = companyRes.rows[0];
@@ -176,7 +173,6 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
-  // Create Deal
   if (method === "POST" && url.pathname === "/api/v1/deals") {
     try {
       const body = await req.json();
@@ -191,10 +187,9 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
-  // Negotiate Deal
   if (method === "POST" && url.pathname.startsWith("/api/v1/deals/") && url.pathname.endsWith("/negotiate")) {
     try {
-      const dealId = url.pathname.split("/")[4]; // التصحيح: index 4 للـ ID
+      const dealId = url.pathname.split("/")[4];
       const body = await req.json();
       
       await query`
@@ -208,10 +203,9 @@ async function handler(req: Request): Promise<Response> {
     }
   }
 
-  // Negotiation Summary
   if (method === "GET" && url.pathname.startsWith("/api/v1/deals/") && url.pathname.endsWith("/negotiation-summary")) {
     try {
-      const dealId = url.pathname.split("/")[4]; // التصحيح: index 4 للـ ID
+      const dealId = url.pathname.split("/")[4];
       const historyRes = await query`
         SELECT * FROM negotiations WHERE deal_id = ${dealId}::uuid ORDER BY created_at ASC
       `;

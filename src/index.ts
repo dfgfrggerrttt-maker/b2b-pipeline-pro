@@ -7,7 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, x-api-key",
 };
 
-// فحص المتغيرات البيئية الإلزامية
 const dbUrl = Deno.env.get("DATABASE_URL");
 const API_SECRET_KEY = Deno.env.get("API_SECRET_KEY") || "b2b_secret_key_prod_9988Supabase1992t";
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
@@ -90,10 +89,9 @@ function jsonResponse(data: any, status = 200) {
   });
 }
 
-// دالة التحليل الذكي للشركات باستخدام Google Gemini
 async function analyzeCompanyWithAI(company: any) {
   if (!GEMINI_API_KEY) {
-    console.warn("⚠️ GEMINI_API_KEY is not set. Using fallback heuristic data.");
+    console.warn("⚠️ GEMINI_API_KEY is not set. Using heuristic fallback.");
     return {
       analysis: {
         digital_maturity: 65,
@@ -194,7 +192,7 @@ async function handler(req: Request): Promise<Response> {
         status: "ok",
         version: "3.2.0",
         storage: "PostgreSQL (Supabase)",
-        ai_engine: GEMINI_API_KEY ? "Google Gemini 2.5 Flash" : "Fallback Engine",
+        ai_engine: GEMINI_API_KEY ? "Google Gemini 2.5 Flash" : "Fallback Heuristic",
         db_connected: true,
       });
     } catch (e: any) {
@@ -227,7 +225,7 @@ async function handler(req: Request): Promise<Response> {
       return jsonResponse({ success: true, data: company });
     }
 
-    // Analyze Company with Real Gemini AI
+    // Analyze Company with Live Gemini AI
     if (method === "POST" && url.pathname.startsWith("/api/v1/companies/") && url.pathname.endsWith("/analyze")) {
       const parts = url.pathname.split("/");
       const id = parts[4];
@@ -237,7 +235,7 @@ async function handler(req: Request): Promise<Response> {
       const company = companies[0];
       if (!company) return jsonResponse({ error: "Company not found", debug_id: id }, 404);
 
-      console.log(`🤖 Generating real AI analysis for company: ${company.name}`);
+      console.log(`🤖 Analyzing company: ${company.name} with Gemini...`);
       const aiResult = await analyzeCompanyWithAI(company);
 
       await sql`

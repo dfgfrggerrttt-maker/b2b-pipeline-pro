@@ -1,4 +1,4 @@
-// index.ts - Deno Deploy with Deno KV (Bulletproof Routing)
+// index.ts - Deno Deploy with Deno KV + DEBUG MODE
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
 const kv = await Deno.openKv();
@@ -19,214 +19,65 @@ async function handler(req: Request): Promise<Response> {
   }
 
   if (method === "GET" && path === "/") {
-    return new Response(JSON.stringify({
-      message: "Welcome to B2B Pipeline Pro v2.0",
-      version: "2.0.0",
-      human_controlled: true,
-      runtime: "Deno Deploy with Deno KV"
-    }), { headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ message: "B2B Pipeline Pro v2.0", runtime: "Deno Deploy + KV" }), { headers: { "Content-Type": "application/json" } });
   }
 
   if (method === "GET" && path === "/health") {
-    return new Response(JSON.stringify({ 
-      status: "ok", 
-      version: "2.0.0",
-      human_controlled: true 
-    }), { headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ status: "ok", version: "2.0.0" }), { headers: { "Content-Type": "application/json" } });
   }
 
-  // GET Companies
-  if (method === "GET" && path === "/api/v1/companies") {
-    const companies = [];
-    for await (const entry of kv.list({ prefix: ["companies"] })) {
-      companies.push(entry.value);
-    }
-    return new Response(JSON.stringify({ success: true, data: companies }), { 
-      headers: { "Content-Type": "application/json" } 
-    });
-  }
-
-  // POST Create Company
   if (method === "POST" && path === "/api/v1/companies") {
     try {
       const body = await req.json();
-      const { name, industry, country, employee_count, website } = body;
-      
-      const score = calculateCompanyScore({ employee_count, industry, website });
-      
       const company = {
         tenant_id: 'tenant_1',
-        name,
-        industry,
-        country,
-        employee_count,
-        website,
-        score,
-        score_confidence: 85,
-        risk_level: score >= 70 ? 'LOW' : score >= 40 ? 'MEDIUM' : 'HIGH',
-        pipeline_status: 'DISCOVERED',
-        buying_signals: [],
-        id: generateUUID(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      
-      await kv.set(["companies", company.id], company);
-      return new Response(JSON.stringify({ success: true, data: company }), { 
-        headers: { "Content-Type": "application/json" } 
-      });
-    } catch (error: any) {
-      return new Response(JSON.stringify({ success: false, error: error.message }), { 
-        status: 400, headers: { "Content-Type": "application/json" } 
-      });
-    }
-  }
-
-  // ✅ POST Analyze Company (Bulletproof Routing)
-  if (method === "POST" && path.startsWith("/api/v1/companies/") && path.endsWith("/analyze")) {
-    const parts = path.split("/");
-    const id = parts[4]; // "/api/v1/companies/ID/analyze" -> index 4 is ID
-    
-    const companyEntry = await kv.get(["companies", id]);
-    const company = companyEntry.value;
-    
-    if (!company) {
-      return new Response(JSON.stringify({ error: "Company not found" }), { 
-        status: 404, headers: { "Content-Type": "application/json" } 
-      });
-    }
-    
-    const analysis = {
-      digital_maturity: 60,
-      pain_points: [{ problem: "Limited tech adoption", evidence: "Large team, low tech", confidence: 80, source: "analysis" }],
-      opportunities: [{ opportunity: "Digital transformation", potential_service: "consulting", reason: "Growth potential", evidence: "Industry trends", confidence: 75 }],
-      swot: { strengths: ["Established"], weaknesses: ["Limited tech adoption"], opportunities: ["Digital transformation"], threats: ["Competition"] },
-      analyzed_at: new Date().toISOString()
-    };
-    
-    const signals = [
-      { type: "HIRING", description: "توسع في فريق الهندسة", detected_at: new Date().toISOString(), confidence: 85 },
-      { type: "FUNDING", description: "احتمال حصول على تمويل", detected_at: new Date().toISOString(), confidence: 70 }
-    ];
-    
-    company.analysis = analysis;
-    company.buying_signals = signals;
-    company.updated_at = new Date().toISOString();
-    
-    await kv.set(["companies", id], company);
-    
-    return new Response(JSON.stringify({ success: true, data: { analysis, signals } }), { 
-      headers: { "Content-Type": "application/json" } 
-    });
-  }
-
-  // POST Create Deal
-  if (method === "POST" && path === "/api/v1/deals") {
-    try {
-      const body = await req.json();
-      const deal = {
-        tenant_id: 'tenant_1',
-        company_id: body.company_id,
-        service_id: body.service_id,
-        status: 'DISCOVERED',
-        probability: 50,
-        id: generateUUID(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      await kv.set(["deals", deal.id], deal);
-      return new Response(JSON.stringify({ success: true, data: deal }), { 
-        headers: { "Content-Type": "application/json" } 
-      });
-    } catch (error: any) {
-      return new Response(JSON.stringify({ success: false, error: error.message }), { 
-        status: 400, headers: { "Content-Type": "application/json" } 
-      });
-    }
-  }
-
-  // ✅ POST Negotiate Deal (Bulletproof Routing)
-  if (method === "POST" && path.startsWith("/api/v1/deals/") && path.endsWith("/negotiate")) {
-    try {
-      const parts = path.split("/");
-      const dealId = parts[4];
-      const body = await req.json();
-      const { action, new_price, notes } = body;
-      
-      const history = {
-        tenant_id: 'tenant_1',
-        deal_id: dealId,
-        actor: 'USER',
-        actor_id: 'user_123',
-        action,
-        new_price,
-        notes,
+        ...body,
+        score: 90,
+        risk_level: "LOW",
+        pipeline_status: "DISCOVERED",
         id: generateUUID(),
         created_at: new Date().toISOString()
       };
       
-      await kv.set(["negotiations", history.id], history);
-      
-      return new Response(JSON.stringify({ success: true, message: 'Negotiation recorded' }), { 
-        headers: { "Content-Type": "application/json" } 
-      });
+      // حفظ في قاعدة البيانات
+      await kv.set(["companies", company.id], company);
+      return new Response(JSON.stringify({ success: true, data: company }), { headers: { "Content-Type": "application/json" } });
     } catch (error: any) {
-      return new Response(JSON.stringify({ success: false, error: error.message }), { 
-        status: 400, headers: { "Content-Type": "application/json" } 
-      });
+      return new Response(JSON.stringify({ success: false, error: error.message }), { status: 400, headers: { "Content-Type": "application/json" } });
     }
   }
 
-  // ✅ GET Negotiation Summary (Bulletproof Routing)
-  if (method === "GET" && path.startsWith("/api/v1/deals/") && path.endsWith("/negotiation-summary")) {
+  // 🔍 نقطة التشخيص (DEBUG)
+  if (method === "POST" && path.startsWith("/api/v1/companies/") && path.endsWith("/analyze")) {
     const parts = path.split("/");
-    const dealId = parts[4];
-    const history = [];
+    const id = parts[4]; 
     
-    for await (const entry of kv.list({ prefix: ["negotiations"] })) {
-      if (entry.value.deal_id === dealId) {
-        history.push(entry.value);
-      }
+    // 1. محاولة جلب الشركة
+    const companyEntry = await kv.get(["companies", id]);
+    
+    // 2. جلب كل ما هو محفوظ في قاعدة البيانات تحت "companies" للتأكد
+    const allKeys = [];
+    for await (const entry of kv.list({ prefix: ["companies"] })) {
+      allKeys.push({ key: entry.key, saved_id: entry.key[1] });
     }
-    
-    const pricing = {
-      initial_price: history.find((h: any) => h.action === 'INITIAL_PRICE')?.new_price,
-      current_price: history[history.length - 1]?.new_price,
-      final_price: history.find((h: any) => h.action === 'ACCEPTED')?.new_price,
-      status: history[history.length - 1]?.action || 'NEGOTIATING'
-    };
-    
-    return new Response(JSON.stringify({ success: true, data: { history, ...pricing } }), { 
+
+    return new Response(JSON.stringify({
+      debug_info: {
+        requested_id: id,
+        path_parts: parts,
+        found_in_db: companyEntry.value !== null,
+        actual_value_in_db: companyEntry.value,
+        all_companies_currently_in_db: allKeys
+      },
+      error: "Company not found. Please check debug_info to see what's in the database."
+    }), { 
+      status: 404, 
       headers: { "Content-Type": "application/json" } 
     });
   }
 
-  // POST Communications
-  if (method === "POST" && path === "/api/v1/communications") {
-    return new Response(JSON.stringify({ 
-      status: 'PENDING_APPROVAL', 
-      message: 'Draft saved. Awaiting human approval.' 
-    }), { headers: { "Content-Type": "application/json" } });
-  }
-
-  // Fallback 404
-  return new Response(JSON.stringify({ error: "Not Found", path: path }), { 
-    status: 404, headers: { "Content-Type": "application/json" } 
-  });
+  return new Response(JSON.stringify({ error: "Not Found", path: path }), { status: 404, headers: { "Content-Type": "application/json" } });
 }
 
-function calculateCompanyScore(company: any): number {
-  let score = 50;
-  if (company.employee_count) {
-    if (company.employee_count > 1000) score += 20;
-    else if (company.employee_count > 100) score += 15;
-    else if (company.employee_count > 10) score += 10;
-  }
-  if (company.website) score += 10;
-  const highPotential = ['technology', 'fintech', 'healthtech', 'ecommerce'];
-  if (company.industry && highPotential.includes(company.industry.toLowerCase())) score += 15;
-  return Math.min(100, Math.max(0, score));
-}
-
-console.log("🚀 B2B Pipeline Pro v2.0.0 running on Deno Deploy with Deno KV");
+console.log("🚀 B2B Pipeline Pro running with DEBUG mode");
 Deno.serve(handler);

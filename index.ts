@@ -1,13 +1,8 @@
-// index.ts - Pure Deno Deploy (No Oak)
+// index.ts - Deno Deploy with Deno KV (Persistent Database)
 import { oakCors } from "https://deno.land/x/cors@v1.2.2/mod.ts";
 
-// In-Memory DB
-const db: any = {
-  companies: [],
-  deals: [],
-  negotiations: [],
-  communications: []
-};
+// Deno KV Database (Persistent)
+const kv = await Deno.openKv();
 
 // UUID Generator
 function generateUUID(): string {
@@ -34,7 +29,7 @@ async function handler(req: Request): Promise<Response> {
       message: "Welcome to B2B Pipeline Pro v2.0",
       version: "2.0.0",
       human_controlled: true,
-      runtime: "Deno Deploy"
+      runtime: "Deno Deploy with Deno KV"
     }), { headers: { "Content-Type": "application/json" } });
   }
 
@@ -47,7 +42,11 @@ async function handler(req: Request): Promise<Response> {
   }
 
   if (method === "GET" && path === "/api/v1/companies") {
-    return new Response(JSON.stringify({ success: true, data: db.companies }), { 
+    const companies = [];
+    for await (const entry of kv.list({ prefix: ["companies"] })) {
+      companies.push(entry.value);
+    }
+    return new Response(JSON.stringify({ success: true, data: companies }), { 
       headers: { "Content-Type": "application/json" } 
     });
   }
@@ -76,7 +75,7 @@ async function handler(req: Request): Promise<Response> {
         updated_at: new Date().toISOString()
       };
       
-      db.companies.push(company);
+      await kv.set(["companies", company.id], company);
       return new Response(JSON.stringify({ success: true, data: company }), { 
         headers: { "Content-Type": "application/json" } 
       });
@@ -90,7 +89,8 @@ async function handler(req: Request): Promise<Response> {
 
   if (method === "POST" && path.match(/^\/api\/v1\/companies\/[^\/]+\/analyze$/)) {
     const id = path.split("/")[5];
-    const company = db.companies.find((c: any) => c.id === id);
+    const companyEntry = await kv.get(["companies", id]);
+    const company = companyEntry.value;
     
     if (!company) {
       return new Response(JSON.stringify({ error: "Company not found" }), { 
@@ -123,6 +123,9 @@ async function handler(req: Request): Promise<Response> {
     
     company.analysis = analysis;
     company.buying_signals = signals;
+    company.updated_at = new Date().toISOString();
+    
+    await kv.set(["companies", id], company);
     
     return new Response(JSON.stringify({ success: true, data: { analysis, signals } }), { 
       headers: { "Content-Type": "application/json" } 
@@ -143,7 +146,7 @@ async function handler(req: Request): Promise<Response> {
         updated_at: new Date().toISOString()
       };
       
-      db.deals.push(deal);
+      await kv.set(["deals", deal.id], deal);
       return new Response(JSON.stringify({ success: true, data: deal }), { 
         headers: { "Content-Type": "application/json" } 
       });
@@ -173,7 +176,7 @@ async function handler(req: Request): Promise<Response> {
         created_at: new Date().toISOString()
       };
       
-      db.negotiations.push(history);
+      await kv.set(["negotiations", history.id], history);
       console.log(`📝 Negotiation Logged: ${action} -> $${new_price}`);
       
       return new Response(JSON.stringify({ success: true, message: 'Negotiation recorded' }), { 
@@ -189,7 +192,13 @@ async function handler(req: Request): Promise<Response> {
 
   if (method === "GET" && path.match(/^\/api\/v1\/deals\/[^\/]+\/negotiation-summary$/)) {
     const dealId = path.split("/")[5];
-    const history = db.negotiations.filter((n: any) => n.deal_id === dealId);
+    const history = [];
+    
+    for await (const entry of kv.list({ prefix: ["negotiations"] })) {
+      if (entry.value.deal_id === dealId) {
+        history.push(entry.value);
+      }
+    }
     
     const pricing = {
       initial_price: history.find((h: any) => h.action === 'INITIAL_PRICE')?.new_price,
@@ -251,10 +260,11 @@ function calculateCompanyScore(company: any): number {
   return Math.min(100, Math.max(0, score));
 }
 
-console.log("🚀 B2B Pipeline Pro v2.0.0 running on Deno Deploy");
+console.log("🚀 B2B Pipeline Pro v2.0.0 running on Deno Deploy with Deno KV");
 console.log("🔒 Human-in-the-loop enforced. No auto-pricing.");
 console.log("️ Compliance checks active.");
-console.log("📊 Audit logging enabled.");
+console.log(" Audit logging enabled.");
+console.log("💾 Persistent database enabled (Deno KV)");
 
 // Export for Deno Deploy
 Deno.serve(handler);

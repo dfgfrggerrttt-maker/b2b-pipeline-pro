@@ -48,14 +48,22 @@ async function ensureTablesExist() {
       created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW()
     )`;
     
-    await sql`CREATE TABLE IF NOT EXISTS deals (
+      await sql`
+    CREATE TABLE IF NOT EXISTS deals (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      tenant_id TEXT, company_id UUID, service_id TEXT,
+      tenant_id TEXT NOT NULL,
+      company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
+      service_id TEXT NOT NULL,
       status TEXT DEFAULT 'DISCOVERED',
       description TEXT,
       budget TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW()
-    )`;
+    )
+  `;
+
+  // ترقية الجدول تلقائيا في حال كان موجودا مسبقا بدون هذه الأعمدة
+  await sql`ALTER TABLE deals ADD COLUMN IF NOT EXISTS description TEXT`;
+  await sql`ALTER TABLE deals ADD COLUMN IF NOT EXISTS budget TEXT`;
     
     await sql`CREATE TABLE IF NOT EXISTS negotiations (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

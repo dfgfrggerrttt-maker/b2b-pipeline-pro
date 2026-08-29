@@ -1,4 +1,3 @@
-// Production Ready B2B Pipeline (Pure Postgres + In-Memory Rate Limiting)
 import postgres from "npm:postgres@3.4.4";
 
 const corsHeaders = {
@@ -15,7 +14,7 @@ if (!dbUrl) {
   throw new Error("DATABASE_URL is required");
 }
 
-// In-Memory Rate Limiting (No Deno KV needed)
+// In-Memory Rate Limiting
 const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW = 60 * 1000;
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -178,7 +177,7 @@ async function handler(req: Request): Promise<Response> {
       await sql`SELECT 1`;
       return jsonResponse({
         status: "ok",
-        version: "4.4.0",
+        version: "4.5.0",
         storage: "PostgreSQL (Supabase)",
         ai_engine: GEMINI_API_KEY ? "Google Gemini 3.6 Flash" : "Fallback Heuristic",
         rate_limit: `${RATE_LIMIT_MAX} req/min`,

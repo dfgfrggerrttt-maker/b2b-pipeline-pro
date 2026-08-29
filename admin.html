@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم Admin - B2B Pipeline Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Tajawal', sans-serif; background: #0f172a; }
+        .glass { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); }
+        .gradient-text { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+    </style>
+</head>
+<body class="min-h-screen text-white p-4 md:p-8">
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center">
+        <div class="glass rounded-2xl p-8 max-w-md w-full border border-gray-700">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <span class="text-3xl">🔐</span>
+                </div>
+                <h1 class="text-2xl font-bold gradient-text">لوحة تحكم Admin</h1>
+                <p class="text-gray-400 text-sm mt-2">B2B Pipeline Pro</p>
+            </div>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-300 text-sm font-bold mb-2">API Secret Key</label>
+                    <input type="password" id="apiKey" required class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 text-white" placeholder="أدخل مفتاح API السري">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-lg font-bold hover:opacity-90">
+                    دخول
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="hidden max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="glass rounded-2xl p-6 mb-6 border border-gray-700 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                    <span class="text-2xl">📊</span>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold gradient-text">لوحة التحكم</h1>
+                    <p class="text-gray-400 text-sm">إدارة الطلبات والشركات</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm font-bold">خروج</button>
+        </header>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="card rounded-xl p-6 border border-gray-700">
+                <div class="text-gray-400 text-sm mb-2">إجمالي الطلبات</div>
+                <div class="text-3xl font-bold text-purple-400" id="statTotalDeals">0</div>
+            </div>
+            <div class="card rounded-xl p-6 border border-gray-700">
+                <div class="text-gray-400 text-sm mb-2">طلبات جديدة</div>
+                <div class="text-3xl font-bold text-yellow-400" id="statPendingDeals">0</div>
+            </div>
+            <div class="card rounded-xl p-6 border border-gray-700">
+                <div class="text-gray-400 text-sm mb-2">مكتملة</div>
+                <div class="text-3xl font-bold text-green-400" id="statCompletedDeals">0</div>
+            </div>
+            <div class="card rounded-xl p-6 border border-gray-700">
+                <div class="text-gray-400 text-sm mb-2">الشركات المحللة</div>
+                <div class="text-3xl font-bold text-blue-400" id="statCompanies">0</div>
+            </div>
+        </div>
+
+        <!-- Deals Table -->
+        <div class="glass rounded-2xl p-6 border border-gray-700">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">📋 الطلبات الواردة</h2>
+                <button onclick="loadDeals()" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm">🔄 تحديث</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-700 text-gray-400 text-sm">
+                            <th class="py-3 px-4 text-right">التاريخ</th>
+                            <th class="py-3 px-4 text-right">الشركة</th>
+                            <th class="py-3 px-4 text-right">الخدمة</th>
+                            <th class="py-3 px-4 text-right">الهاتف</th>
+                            <th class="py-3 px-4 text-right">الحالة</th>
+                            <th class="py-3 px-4 text-right">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dealsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deal Details Modal -->
+    <div id="dealModal" class="hidden fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+        <div class="glass rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 border border-gray-700">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold gradient-text">تفاصيل الطلب</h3>
+                <button onclick="closeDealModal()" class="text-gray-400 hover:text-white text-2xl">✕</button>
+            </div>
+            <div id="dealDetails" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://b2b-pipeline-pro-53.dfgfrggerrttt-maker.deno.net';
+        let apiKey = '';
+
+        const serviceNames = {
+            'web_basic': 'موقع إلكتروني أساسي',
+            'web_ecommerce': 'متجر إلكتروني',
+            'logo_basic': 'تصميم لوجو',
+            'logo_branding': 'هوية بصرية كاملة',
+            'menu_digital': 'منيو رقمي',
+            'seo_basic': 'تحسين SEO',
+            'social_content': 'محتوى سوشيال ميديا',
+            'pdf_convert': 'تحويل PDF',
+            'email_automation': 'أتمتة البريد',
+            'custom': 'خدمة مخصصة'
+        };
+
+        const statusColors = {
+            'DISCOVERED': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50',
+            'IN_PROGRESS': 'bg-blue-500/20 text-blue-400 border-blue-500/50',
+            'COMPLETED': 'bg-green-500/20 text-green-400 border-green-500/50',
+            'REJECTED': 'bg-red-500/20 text-red-400 border-red-500/50'
+        };
+
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            apiKey = document.getElementById('apiKey').value;
+            localStorage.setItem('admin_api_key', apiKey);
+            showDashboard();
+        });
+
+        async function showDashboard() {
+            if (!apiKey) {
+                const saved = localStorage.getItem('admin_api_key');
+                if (saved) apiKey = saved;
+                else return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/stats`, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                
+                if (res.ok) {
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('dashboard').classList.remove('hidden');
+                    await loadDeals();
+                    await loadStats();
+                } else {
+                    alert('مفتاح API غير صحيح');
+                    localStorage.removeItem('admin_api_key');
+                    apiKey = '';
+                }
+            } catch (error) {
+                alert('خطأ في الاتصال: ' + error.message);
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/stats`, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('statTotalDeals').textContent = data.data.total_deals;
+                    document.getElementById('statPendingDeals').textContent = data.data.pending_deals;
+                    document.getElementById('statCompletedDeals').textContent = data.data.completed_deals;
+                    document.getElementById('statCompanies').textContent = data.data.total_companies;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadDeals() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/deals`, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    const tbody = document.getElementById('dealsTableBody');
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-500">لا توجد طلبات بعد</td></tr>';
+                        return;
+                    }
+                    
+                    tbody.innerHTML = data.data.map(deal => `
+                        <tr class="border-b border-gray-800 hover:bg-gray-800/50 transition">
+                            <td class="py-4 px-4 text-sm text-gray-400">${new Date(deal.created_at).toLocaleDateString('ar-SA')}</td>
+                            <td class="py-4 px-4">
+                                <div class="font-bold">${deal.company_name || 'غير معروف'}</div>
+                                <div class="text-xs text-gray-500">${deal.company_industry || ''}</div>
+                            </td>
+                            <td class="py-4 px-4 text-sm">${serviceNames[deal.service_id] || deal.service_id}</td>
+                            <td class="py-4 px-4 text-sm text-gray-400">${deal.phone || '-'}</td>
+                            <td class="py-4 px-4">
+                                <span class="px-3 py-1 rounded-full text-xs border ${statusColors[deal.status] || 'bg-gray-500/20 text-gray-400'}">${deal.status}</span>
+                            </td>
+                            <td class="py-4 px-4">
+                                <button onclick="viewDeal('${deal.id}')" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-xs">عرض</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading deals:', error);
+            }
+        }
+
+        async function viewDeal(dealId) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/deals`, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                const data = await res.json();
+                const deal = data.data.find(d => d.id === dealId);
+                
+                if (deal) {
+                    document.getElementById('dealDetails').innerHTML = `
+                        <div class="bg-gray-800/50 rounded-lg p-4">
+                            <div class="text-gray-400 text-sm mb-1">رقم الصفقة</div>
+                            <div class="font-mono text-sm break-all text-purple-400">${deal.id}</div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-gray-800/50 rounded-lg p-4">
+                                <div class="text-gray-400 text-sm mb-1">الشركة</div>
+                                <div class="font-bold">${deal.company_name || '-'}</div>
+                            </div>
+                            <div class="bg-gray-800/50 rounded-lg p-4">
+                                <div class="text-gray-400 text-sm mb-1">المجال</div>
+                                <div class="font-bold">${deal.company_industry || '-'}</div>
+                            </div>
+                            <div class="bg-gray-800/50 rounded-lg p-4">
+                                <div class="text-gray-400 text-sm mb-1">الخدمة</div>
+                                <div class="font-bold">${serviceNames[deal.service_id] || deal.service_id}</div>
+                            </div>
+                            <div class="bg-gray-800/50 rounded-lg p-4">
+                                <div class="text-gray-400 text-sm mb-1">الحالة</div>
+                                <span class="px-3 py-1 rounded-full text-xs border ${statusColors[deal.status]}">${deal.status}</span>
+                            </div>
+                        </div>
+                        <div class="bg-gray-800/50 rounded-lg p-4">
+                            <div class="text-gray-400 text-sm mb-1">الوصف</div>
+                            <div class="text-gray-200 whitespace-pre-wrap">${deal.description || '-'}</div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-gray-800/50 rounded-lg p-4">
+                                <div class="text-gray-400 text-sm mb-1">الهاتف</div>
+                                <div class="font-bold text-green-400">${deal.phone || '-'}</div>
+                            </div>
+                            <div class="bg-gray-800/50 rounded-lg p-4">
+                                <div class="text-gray-400 text-sm mb-1">البريد</div>
+                                <div class="font-bold text-blue-400">${deal.email || '-'}</div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-800/50 rounded-lg p-4">
+                            <div class="text-gray-400 text-sm mb-1">تاريخ الإنشاء</div>
+                            <div>${new Date(deal.created_at).toLocaleString('ar-SA')}</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="updateStatus('${deal.id}', 'IN_PROGRESS')" class="flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded-lg font-bold">بدء العمل</button>
+                            <button onclick="updateStatus('${deal.id}', 'COMPLETED')" class="flex-1 bg-green-600 hover:bg-green-700 py-2 rounded-lg font-bold">مكتمل</button>
+                            <button onclick="updateStatus('${deal.id}', 'REJECTED')" class="flex-1 bg-red-600 hover:bg-red-700 py-2 rounded-lg font-bold">مرفوض</button>
+                        </div>
+                    `;
+                    document.getElementById('dealModal').classList.remove('hidden');
+                }
+            } catch (error) {
+                alert('خطأ: ' + error.message);
+            }
+        }
+
+        async function updateStatus(dealId, status) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/deals/${dealId}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status })
+                });
+                
+                if (res.ok) {
+                    alert('تم تحديث الحالة');
+                    closeDealModal();
+                    await loadDeals();
+                    await loadStats();
+                }
+            } catch (error) {
+                alert('خطأ: ' + error.message);
+            }
+        }
+
+        function closeDealModal() {
+            document.getElementById('dealModal').classList.add('hidden');
+        }
+
+        function logout() {
+            localStorage.removeItem('admin_api_key');
+            apiKey = '';
+            location.reload();
+        }
+
+        // Auto-login if key exists
+        if (localStorage.getItem('admin_api_key')) {
+            showDashboard();
+        }
+    </script>
+</body>
+</html>

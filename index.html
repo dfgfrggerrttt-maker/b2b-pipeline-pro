@@ -1,182 +1,227 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <!-- ==================== إعدادات أساسية ==================== -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
-    <!-- ==================== وسوم السيو (SEO) ==================== -->
-    <title>B2B Pipeline Pro | تحليل الشركات بالذكاء الاصطناعي وحلول تقنية</title>
-    <meta name="description" content="أداة مجانية متقدمة لتحليل الشركات واكتشاف نقاط الضعف التقنية والفرص البيعية باستخدام الذكاء الاصطناعي. احصل على تقرير شامل وحلول برمجية جاهزة لموقعك، لوجوك، ومنيوك.">
-    <meta name="keywords" content="تحليل شركات, ذكاء اصطناعي, B2B, تسويق, تطوير مواقع, تصميم لوجو, منيو رقمي, SEO, أتمتة, حلول تقنية, وكالة رقمية">
-    <meta name="author" content="B2B Pipeline Pro">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://b2b-pipeline-pro-53.dfgfrggerrttt-maker.deno.net/">
-
-    <!-- ==================== أيقونة الموقع (Favicon) ==================== -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
-
-    <!-- ==================== وسوم المشاركة (Open Graph) لواتساب وفيسبوك ==================== -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://b2b-pipeline-pro-53.dfgfrggerrttt-maker.deno.net/">
-    <meta property="og:title" content="B2B Pipeline Pro | حلل شركتك مجاناً بالذكاء الاصطناعي">
-    <meta property="og:description" content="اكتشف ما ينقص شركتك واحصل على حلول تقنية جاهزة (مواقع، لوجوهات، منيو) بتقنية الذكاء الاصطناعي.">
-    <meta property="og:image" content="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=630&fit=crop">
-    <meta property="og:locale" content="ar_SA">
-
-    <!-- ==================== وسوم تويتر (Twitter Card) ==================== -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="B2B Pipeline Pro | تحليل الشركات بالذكاء الاصطناعي">
-    <meta name="twitter:description" content="أداة مجانية لتحليل الشركات واكتشاف الفرص التقنية.">
-    <meta name="twitter:image" content="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=630&fit=crop">
-
-    <!-- ==================== البيانات المنظمة (Schema.org) لجوجل ==================== -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "B2B Pipeline Pro",
-      "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Web",
-      "description": "أداة ذكاء اصطناعي لتحليل الشركات وتقديم حلول تقنية مخصصة.",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      }
-    }
-    </script>
-
-    <!-- ==================== التنسيقات (Tailwind CSS) ==================== -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <style> 
-        body { font-family: 'Tajawal', sans-serif; } 
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B2B Intelligence - منصة نمو الشركات بالذكاء الاصطناعي</title>
+  <meta name="description" content="منصة تحليل الشركات بالذكاء الاصطناعي وتشخيص مؤشرات النمو لزيادة المبيعات.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style> body { font-family: 'Tajawal', sans-serif; } </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
+<body class="bg-slate-950 text-slate-100 min-h-screen">
 
-    <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <span class="text-3xl"></span>
-                <h1 class="text-xl font-bold text-gray-800">B2B Pipeline Pro</h1>
-            </div>
-            <a href="#analyze" class="gradient-bg text-white px-5 py-2 rounded-lg hover:opacity-90 text-sm font-bold">ابدأ الآن</a>
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur fixed top-0 w-full z-40">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <span class="text-xl font-black bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">B2B Pipeline Pro</span>
+      <a href="#analyze-form" class="text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded-lg transition">ابدأ الآن</a>
+    </div>
+  </header>
+
+  <main class="pt-24 pb-16 px-4 max-w-4xl mx-auto">
+    <!-- Hero -->
+    <div class="text-center mb-10">
+      <h1 class="text-3xl sm:text-5xl font-extrabold mb-4">حلل شركتك مجاناً بالذكاء الاصطناعي</h1>
+      <p class="text-slate-400 text-sm sm:text-base">احصل على تشخيص دقيق لنقاط الضعف وفرص النمو المتاحة لمشروعك فوراً.</p>
+    </div>
+
+    <!-- Company Form -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-8 shadow-xl">
+      <form id="company-form" class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1 font-bold">اسم الشركة أو المشروع *</label>
+          <input type="text" id="name" required placeholder="مثال: شركة الحلول المتقدمة" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none" />
         </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="flex-grow flex flex-col items-center justify-center p-4 py-12">
-        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full">
-            <div class="text-center mb-6">
-                <h2 class="text-3xl font-bold text-purple-700 mb-2">حلل شركتك مجاناً</h2>
-                <p class="text-gray-600">اكتشف الفرص التقنية باستخدام الذكاء الاصطناعي</p>
-            </div>
-            
-            <form id="analysisForm" class="space-y-4">
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-1" for="companyName">اسم الشركة *</label>
-                    <input type="text" id="companyName" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500" placeholder="مثال: شركة النور">
-                </div>
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-1" for="industry">المجال *</label>
-                    <input type="text" id="industry" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500" placeholder="مثال: مطعم / تقنية / خدمات">
-                </div>
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-1" for="country">الدولة *</label>
-                    <input type="text" id="country" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500" placeholder="مثال: السعودية">
-                </div>
-                <div>
-                    <label class="block text-gray-700 text-sm font-bold mb-1" for="website">الموقع الإلكتروني (اختياري)</label>
-                    <input type="url" id="website" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500" placeholder="https://example.com">
-                </div>
-                
-                <button type="submit" id="submitBtn" class="w-full gradient-bg text-white p-3 rounded-lg font-bold hover:opacity-90 transition duration-300 flex items-center justify-center gap-2">
-                    <span>ابدأ التحليل المجاني</span>
-                </button>
-            </form>
-
-            <div id="resultSection" class="hidden mt-6 p-4 bg-green-50 border-r-4 border-green-500 rounded-lg">
-                <h3 class="font-bold text-green-800 mb-2">✅ تم التحليل بنجاح!</h3>
-                <div id="analysisDetails" class="text-sm text-gray-700 space-y-2"></div>
-                <button onclick="alert('سيتم إضافة نموذج طلب الخدمات قريباً!')" class="mt-4 w-full bg-green-600 text-white p-2 rounded-lg font-bold hover:bg-green-700">
-                    اطلب حل لهذه المشكلة
-                </button>
-            </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1 font-bold">المجال / الصناعة</label>
+            <input type="text" id="industry" placeholder="تقنية، لوجستيات، تجارة..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1 font-bold">الموقع الإلكتروني (اختياري)</label>
+            <input type="url" id="website" placeholder="https://example.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:border-indigo-500 focus:outline-none" />
+          </div>
         </div>
-    </main>
+        <button type="submit" id="btn-submit" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl transition text-white text-sm flex items-center justify-center gap-2">
+          <span id="btn-text">ابدأ التحليل المجاني</span>
+          <div id="loader" class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        </button>
+      </form>
+    </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-6 mt-auto">
-        <div class="container mx-auto px-4 text-center">
-            <p class="mb-1 text-sm">© 2026 B2B Pipeline Pro. جميع الحقوق محفوظة.</p>
-            <p class="text-gray-400 text-xs">مدعوم بتقنيات Google Gemini AI & Supabase</p>
+    <!-- Results Section -->
+    <div id="results" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-indigo-900/60 rounded-2xl p-6">
+        <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
+          <h3 id="res-name" class="text-xl font-bold text-white"></h3>
+          <span class="text-xs bg-indigo-950 border border-indigo-800 text-indigo-300 px-3 py-1 rounded-full font-bold">
+            النضج الرقمي: <span id="res-score"></span>%
+          </span>
         </div>
-    </footer>
 
-    <!-- ==================== البرمجة (JavaScript) ==================== -->
-    <script>
-        const API_URL = "https://b2b-pipeline-pro-53.dfgfrggerrttt-maker.deno.net";
-        let currentCompanyId = null;
+        <div class="mb-4">
+          <h4 class="text-xs font-bold text-indigo-400 mb-2">مؤشرات النمو المكتشفة:</h4>
+          <div id="signals-box" class="space-y-2 text-xs"></div>
+        </div>
 
-        document.getElementById('analysisForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const originalText = btn.innerHTML;
-            
-            btn.innerHTML = '<span class="animate-spin">⏳</span> جاري التحليل...';
-            btn.disabled = true;
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+            <h5 class="text-xs font-bold text-red-400 mb-2">⚠️ المشكلات المكتشفة:</h5>
+            <ul id="pain-points" class="text-xs text-slate-400 space-y-1"></ul>
+          </div>
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+            <h5 class="text-xs font-bold text-emerald-400 mb-2">💡 الفرص والحلول:</h5>
+            <ul id="opportunities" class="text-xs text-slate-400 space-y-1"></ul>
+          </div>
+        </div>
 
-            try {
-                const companyData = {
-                    name: document.getElementById('companyName').value,
-                    industry: document.getElementById('industry').value,
-                    country: document.getElementById('country').value,
-                    employee_count: 10,
-                    website: document.getElementById('website').value || "https://example.com"
-                };
+        <!-- Action Button -->
+        <button onclick="openOrderModal()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-sm transition">
+          اطلب حلاً مخصصاً لهذه المشكلات الآن ←
+        </button>
+      </div>
+    </div>
+  </main>
 
-                const res1 = await fetch(`${API_URL}/api/v1/companies`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(companyData)
-                });
-                const data1 = await res1.json();
+  <!-- Modal for Service Ordering -->
+  <div id="order-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+      <button onclick="closeOrderModal()" class="absolute top-4 left-4 text-slate-400 hover:text-white text-xl">✕</button>
+      <h3 class="text-lg font-bold text-white mb-2">طلب تنفيذ خدمة / حل</h3>
+      <p class="text-xs text-slate-400 mb-4">سيتم إنشاء صفقة جديدة في النظام وتوجيه فريق العمل لمتابعتها فوراً.</p>
 
-                if (!data1.success) throw new Error(data1.error || "فشل إنشاء الشركة");
-                currentCompanyId = data1.data.id;
+      <form id="deal-form" class="space-y-3">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">الخدمة المطلوبة</label>
+          <select id="deal-service" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none">
+            <option value="srv_ai_automation">أتمتة العمليات وذكاء الأعمال (AI)</option>
+            <option value="srv_cloud_arch">استشارات البنية التحتية والسحاب</option>
+            <option value="srv_custom_dev">تطوير منصة / تطبيق مخصص</option>
+          </select>
+        </div>
 
-                const res2 = await fetch(`${API_URL}/api/v1/companies/${currentCompanyId}/analyze`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                const data2 = await res2.json();
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">الميزانية التقديرية (اختياري)</label>
+          <input type="text" id="deal-budget" placeholder="مثال: 5,000$ - 10,000$" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
+        </div>
 
-                if (!data2.success) throw new Error(data2.error || "فشل التحليل");
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">تفاصيل إضافية عن المتطلبات</label>
+          <textarea id="deal-desc" rows="3" placeholder="اكتب ما تحتاجه تحديداً هنا..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></textarea>
+        </div>
 
-                const analysis = data2.data.analysis;
-                let html = `<p class="font-bold text-purple-700">🔍 نقاط الضعف المكتشفة:</p><ul class="list-disc list-inside mb-3">`;
-                analysis.pain_points.forEach(p => html += `<li>${p.problem}</li>`);
-                html += `</ul>`;
+        <button type="submit" id="btn-deal-submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs text-white transition mt-2">
+          تأكيد وإرسال الطلب
+        </button>
+      </form>
+    </div>
+  </div>
 
-                html += `<p class="font-bold text-purple-700">💡 الفرص المتاحة:</p><ul class="list-disc list-inside">`;
-                analysis.opportunities.forEach(o => html += `<li>${o.opportunity}</li>`);
-                html += `</ul>`;
+  <script>
+    const API_BASE = "https://b2b-pipeline-pro-53.dfgfrggerrttt-maker.deno.net";
+    let activeCompanyId = null;
 
-                document.getElementById('analysisDetails').innerHTML = html;
-                document.getElementById('resultSection').classList.remove('hidden');
+    const companyForm = document.getElementById("company-form");
+    const results = document.getElementById("results");
+    const loader = document.getElementById("loader");
+    const btnText = document.getElementById("btn-text");
 
-            } catch (error) {
-                alert("حدث خطأ: " + error.message);
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
+    // Submit Analysis
+    companyForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      btnText.textContent = "جاري التحليل...";
+      loader.classList.remove("hidden");
+
+      try {
+        // 1. Create company
+        const compRes = await fetch(`${API_BASE}/api/v1/companies`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: document.getElementById("name").value,
+            industry: document.getElementById("industry").value,
+            website: document.getElementById("website").value
+          })
         });
-    </script>
+        const compData = await compRes.json();
+        if (!compData.success) throw new Error(compData.error);
+        activeCompanyId = compData.data.id;
+
+        // 2. Run AI Analysis
+        const aiRes = await fetch(`${API_BASE}/api/v1/companies/${activeCompanyId}/analyze`, { method: "POST" });
+        const aiData = await aiRes.json();
+        if (!aiData.success) throw new Error(aiData.error);
+
+        // Display results
+        document.getElementById("res-name").textContent = compData.data.name;
+        document.getElementById("res-score").textContent = aiData.data.analysis.digital_maturity || 75;
+
+        document.getElementById("signals-box").innerHTML = (aiData.data.signals || []).map(s => 
+          `<div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-slate-300">⚡ <strong>[${s.type}]</strong> ${s.description}</div>`
+        ).join("");
+
+        document.getElementById("pain-points").innerHTML = (aiData.data.analysis.pain_points || []).map(p => 
+          `<li>• <strong>${p.problem}:</strong> ${p.evidence || ''}</li>`
+        ).join("");
+
+        document.getElementById("opportunities").innerHTML = (aiData.data.analysis.opportunities || []).map(o => 
+          `<li>• <strong>${o.opportunity}</strong></li>`
+        ).join("");
+
+        results.classList.remove("hidden");
+        results.scrollIntoView({ behavior: 'smooth' });
+
+      } catch (err) {
+        alert("حدث خطأ: " + err.message);
+      } finally {
+        btnText.textContent = "ابدأ التحليل المجاني";
+        loader.classList.add("hidden");
+      }
+    });
+
+    // Modal Control
+    function openOrderModal() {
+      if (!activeCompanyId) return alert("يرجى تحليل الشركة أولاً");
+      document.getElementById("order-modal").classList.remove("hidden");
+    }
+
+    function closeOrderModal() {
+      document.getElementById("order-modal").classList.add("hidden");
+    }
+
+    // Submit Deal
+    document.getElementById("deal-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById("btn-deal-submit");
+      submitBtn.textContent = "جاري إرسال الطلب...";
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/deals`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            company_id: activeCompanyId,
+            service_id: document.getElementById("deal-service").value,
+            budget: document.getElementById("deal-budget").value,
+            description: document.getElementById("deal-desc").value
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert("✅ تم استلام طلبك بنجاح! رقم الصفقة: " + data.data.id);
+          closeOrderModal();
+        } else {
+          alert("خطأ: " + data.error);
+        }
+      } catch (err) {
+        alert("تعذر إرسال الطلب: " + err.message);
+      } finally {
+        submitBtn.textContent = "تأكيد وإرسال الطلب";
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>

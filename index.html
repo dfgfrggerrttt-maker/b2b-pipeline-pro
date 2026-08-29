@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <!-- ==================== إعدادات أساسية ==================== -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- ==================== وسوم السيو (SEO) ==================== -->
+    <title>B2B Pipeline Pro | تحليل الشركات بالذكاء الاصطناعي وحلول تقنية</title>
+    <meta name="description" content="أداة مجانية متقدمة لتحليل الشركات واكتشاف نقاط الضعف التقنية والفرص البيعية باستخدام الذكاء الاصطناعي. احصل على تقرير شامل وحلول برمجية جاهزة لموقعك، لوجوك، ومنيوك.">
+    <meta name="keywords" content="تحليل شركات, ذكاء اصطناعي, B2B, تسويق, تطوير مواقع, تصميم لوجو, منيو رقمي, SEO, أتمتة, حلول تقنية, وكالة رقمية">
+    <meta name="author" content="B2B Pipeline Pro">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://b2b-pipeline-pro-53.dfgfrggerrttt-maker.deno.net/">
+
+    <!-- ==================== أيقونة الموقع (Favicon) ==================== -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22></text></svg>">
+
+    <!-- ==================== وسوم المشاركة (Open Graph) لواتساب وفيسبوك ==================== -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://b2b-pipeline-pro-53.dfgfrggerrttt-maker.deno.net/">
+    <meta property="og:title" content="B2B Pipeline Pro | حلل شركتك مجاناً بالذكاء الاصطناعي">
+    <meta property="og:description" content="اكتشف ما ينقص شركتك واحصل على حلول تقنية جاهزة (مواقع، لوجوهات، منيو) بتقنية الذكاء الاصطناعي.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=630&fit=crop">
+    <meta property="og:locale" content="ar_SA">
+
+    <!-- ==================== وسوم تويتر (Twitter Card) ==================== -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="B2B Pipeline Pro | تحليل الشركات بالذكاء الاصطناعي">
+    <meta name="twitter:description" content="أداة مجانية لتحليل الشركات واكتشاف الفرص التقنية.">
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=630&fit=crop">
+
+    <!-- ==================== البيانات المنظمة (Schema.org) لجوجل ==================== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "B2B Pipeline Pro",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description": "أداة ذكاء اصطناعي لتحليل الشركات وتقديم حلول تقنية مخصصة.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+
+    <!-- ==================== التنسيقات (Tailwind CSS) ==================== -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style> 
+        body { font-family: 'Tajawal', sans-serif; } 
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-3xl"></span>
+                <h1 class="text-xl font-bold text-gray-800">B2B Pipeline Pro</h1>
+            </div>
+            <a href="#analyze" class="gradient-bg text-white px-5 py-2 rounded-lg hover:opacity-90 text-sm font-bold">ابدأ الآن</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col items-center justify-center p-4 py-12">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-bold text-purple-700 mb-2">حلل شركتك مجاناً</h2>
+                <p class="text-gray-600">اكتشف الفرص التقنية باستخدام الذكاء الاصطناعي</p>
+            </div>
+            
+            <form id="analysisForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-1" for="companyName">اسم الشركة *</label>
+                    <input type="text" id="companyName" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500" placeholder="مثال: شركة النور">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-1" for="industry">المجال *</label>
+                    <input type="text" id="industry" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500" placeholder="مثال: مطعم / تقنية / خدمات">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-1" for="country">الدولة *</label>
+                    <input type="text" id="country" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500" placeholder="مثال: السعودية">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-1" for="website">الموقع الإلكتروني (اختياري)</label>
+                    <input type="url" id="website" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-500" placeholder="https://example.com">
+                </div>
+                
+                <button type="submit" id="submitBtn" class="w-full gradient-bg text-white p-3 rounded-lg font-bold hover:opacity-90 transition duration-300 flex items-center justify-center gap-2">
+                    <span>ابدأ التحليل المجاني</span>
+                </button>
+            </form>
+
+            <div id="resultSection" class="hidden mt-6 p-4 bg-green-50 border-r-4 border-green-500 rounded-lg">
+                <h3 class="font-bold text-green-800 mb-2">✅ تم التحليل بنجاح!</h3>
+                <div id="analysisDetails" class="text-sm text-gray-700 space-y-2"></div>
+                <button onclick="alert('سيتم إضافة نموذج طلب الخدمات قريباً!')" class="mt-4 w-full bg-green-600 text-white p-2 rounded-lg font-bold hover:bg-green-700">
+                    اطلب حل لهذه المشكلة
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-6 mt-auto">
+        <div class="container mx-auto px-4 text-center">
+            <p class="mb-1 text-sm">© 2026 B2B Pipeline Pro. جميع الحقوق محفوظة.</p>
+            <p class="text-gray-400 text-xs">مدعوم بتقنيات Google Gemini AI & Supabase</p>
+        </div>
+    </footer>
+
+    <!-- ==================== البرمجة (JavaScript) ==================== -->
+    <script>
+        const API_URL = "https://b2b-pipeline-pro-53.dfgfrggerrttt-maker.deno.net";
+        let currentCompanyId = null;
+
+        document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<span class="animate-spin">⏳</span> جاري التحليل...';
+            btn.disabled = true;
+
+            try {
+                const companyData = {
+                    name: document.getElementById('companyName').value,
+                    industry: document.getElementById('industry').value,
+                    country: document.getElementById('country').value,
+                    employee_count: 10,
+                    website: document.getElementById('website').value || "https://example.com"
+                };
+
+                const res1 = await fetch(`${API_URL}/api/v1/companies`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(companyData)
+                });
+                const data1 = await res1.json();
+
+                if (!data1.success) throw new Error(data1.error || "فشل إنشاء الشركة");
+                currentCompanyId = data1.data.id;
+
+                const res2 = await fetch(`${API_URL}/api/v1/companies/${currentCompanyId}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data2 = await res2.json();
+
+                if (!data2.success) throw new Error(data2.error || "فشل التحليل");
+
+                const analysis = data2.data.analysis;
+                let html = `<p class="font-bold text-purple-700">🔍 نقاط الضعف المكتشفة:</p><ul class="list-disc list-inside mb-3">`;
+                analysis.pain_points.forEach(p => html += `<li>${p.problem}</li>`);
+                html += `</ul>`;
+
+                html += `<p class="font-bold text-purple-700">💡 الفرص المتاحة:</p><ul class="list-disc list-inside">`;
+                analysis.opportunities.forEach(o => html += `<li>${o.opportunity}</li>`);
+                html += `</ul>`;
+
+                document.getElementById('analysisDetails').innerHTML = html;
+                document.getElementById('resultSection').classList.remove('hidden');
+
+            } catch (error) {
+                alert("حدث خطأ: " + error.message);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

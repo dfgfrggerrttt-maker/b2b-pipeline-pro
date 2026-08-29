@@ -14,8 +14,8 @@ if (!dbUrl) {
   throw new Error("DATABASE_URL is required");
 }
 
-// In-Memory Rate Limiting
-const RATE_LIMIT_MAX = 30;
+// In-Memory Rate Limiter (60 req/min)
+const RATE_LIMIT_MAX = 60;
 const RATE_LIMIT_WINDOW = 60 * 1000;
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
@@ -47,6 +47,7 @@ const sql = postgres(dbUrl, {
 let dbInitialized = false;
 async function ensureTablesExist() {
   if (dbInitialized) return;
+  
   await sql`
     CREATE TABLE IF NOT EXISTS companies (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -65,6 +66,7 @@ async function ensureTablesExist() {
       updated_at TIMESTAMPTZ DEFAULT NOW()
     )
   `;
+
   await sql`
     CREATE TABLE IF NOT EXISTS deals (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -77,6 +79,8 @@ async function ensureTablesExist() {
       created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `;
+  
+  // ترقية الأعمدة لضمان عدم حدوث خطأ 500
   await sql`ALTER TABLE deals ADD COLUMN IF NOT EXISTS description TEXT`;
   await sql`ALTER TABLE deals ADD COLUMN IF NOT EXISTS budget TEXT`;
 
@@ -91,6 +95,7 @@ async function ensureTablesExist() {
       created_at TIMESTAMPTZ DEFAULT NOW()
     )
   `;
+
   dbInitialized = true;
 }
 
@@ -107,12 +112,12 @@ async function analyzeCompanyWithAI(company: any) {
   if (!GEMINI_API_KEY) {
     return {
       analysis: {
-        digital_maturity: 65,
-        pain_points: [{ problem: "Limited digital scaling", evidence: "High growth team", confidence: 80 }],
-        opportunities: [{ opportunity: "Cloud modernization", potential_service: "cloud_arch", confidence: 85 }],
-        swot: { strengths: ["Market Fit"], weaknesses: ["Manual Ops"], opportunities: ["AI Automation"], threats: ["Competitors"] },
+        digital_maturity: 75,
+        pain_points: [{ problem: "Limited digital scaling", evidence: "Market expansion phase", confidence: 85 }],
+        opportunities: [{ opportunity: "Cloud infrastructure setup", potential_service: "srv_cloud_arch", confidence: 80 }],
+        swot: { strengths: ["Strong Presence"], weaknesses: ["Manual Ops"], opportunities: ["AI Automation"], threats: ["Competitors"] },
       },
-      signals: [{ type: "EXPANSION", description: "توسع في العمليات الرقمية", confidence: 85 }],
+      signals: [{ type: "EXPANSION", description: "توسع في العمليات الرقمية", confidence: 90 }],
     };
   }
 
@@ -126,8 +131,8 @@ async function analyzeCompanyWithAI(company: any) {
 {
   "analysis": {
     "digital_maturity": 75,
-    "pain_points": [{"problem": "تحدي تقني أو تشغيلي", "evidence": "الدليل", "confidence": 85}],
-    "opportunities": [{"opportunity": "فرصة نمو", "potential_service": "الخدمة المقترحة", "confidence": 80}],
+    "pain_points": [{"problem": "تحدي تشغيلي أو تقني", "evidence": "الدليل", "confidence": 85}],
+    "opportunities": [{"opportunity": "فرصة نمو وتطوير", "potential_service": "الخدمة المقترحة", "confidence": 80}],
     "swot": {"strengths": ["نقطة قوة"], "weaknesses": ["نقطة ضعف"], "opportunities": ["فرصة"], "threats": ["تهديد"]}
   },
   "signals": [{"type": "EXPANSION", "description": "وصف مؤشر النمو بالعربية", "confidence": 90}]
@@ -177,7 +182,7 @@ async function handler(req: Request): Promise<Response> {
       await sql`SELECT 1`;
       return jsonResponse({
         status: "ok",
-        version: "4.5.0",
+        version: "5.0.0",
         storage: "PostgreSQL (Supabase)",
         ai_engine: GEMINI_API_KEY ? "Google Gemini 3.6 Flash" : "Fallback Heuristic",
         rate_limit: `${RATE_LIMIT_MAX} req/min`,
@@ -191,6 +196,7 @@ async function handler(req: Request): Promise<Response> {
   try {
     await ensureTablesExist();
 
+    // 1. مسارات عامة للموقع
     if (method === "POST" && url.pathname === "/api/v1/companies") {
       const body = await req.json();
       if (!body.name) return jsonResponse({ error: "Company name is required" }, 400);
@@ -235,6 +241,7 @@ async function handler(req: Request): Promise<Response> {
       return jsonResponse({ success: true, data: deal });
     }
 
+    // 2. مسارات محمية
     if (!isAuthorized(req)) {
       return jsonResponse({ error: "Unauthorized: Admin API Key required" }, 401);
     }

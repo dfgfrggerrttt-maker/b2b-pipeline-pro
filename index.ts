@@ -1,4 +1,4 @@
-// index.ts - Deno Deploy with Supabase PostgreSQL (Fixed Undefined Values)
+// index.ts - Deno Deploy with Telegram Notifications
 import postgres from "npm:postgres@3.4.4";
 
 const corsHeaders = {
@@ -8,9 +8,7 @@ const corsHeaders = {
 };
 
 const dbUrl = Deno.env.get("DATABASE_URL");
-if (!dbUrl) {
-  throw new Error("DATABASE_URL is required");
-}
+if (!dbUrl) throw new Error("DATABASE_URL is required");
 
 const sql = postgres(dbUrl, {
   ssl: "require",
@@ -18,6 +16,40 @@ const sql = postgres(dbUrl, {
   idle_timeout: 20,
   prepare: false,
 });
+
+// Telegram Config
+const TELEGRAM_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN");
+const TELEGRAM_CHAT_ID = Deno.env.get("TELEGRAM_CHAT_ID");
+const API_SECRET_KEY = Deno.env.get("API_SECRET_KEY");
+
+// إرسال إشعار Telegram
+async function sendTelegramNotification(message: string) {
+  if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) {
+    console.warn("⚠️ Telegram not configured");
+    return;
+  }
+  
+  try {
+    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: message,
+        parse_mode: 'HTML'
+      })
+    });
+    
+    if (res.ok) {
+      console.log("✅ Telegram notification sent");
+    } else {
+      console.error("❌ Telegram error:", await res.text());
+    }
+  } catch (error: any) {
+    console.error("❌ Telegram failed:", error.message);
+  }
+}
 
 let dbInitialized = false;
 async function ensureTablesExist() {
@@ -37,7 +69,10 @@ async function ensureTablesExist() {
       status TEXT DEFAULT 'DISCOVERED',
       description TEXT,
       budget TEXT,
-      created_at TIMESTAMPTZ DEFAULT NOW()
+      phone TEXT,
+      email TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
     )`;
     
     await sql`CREATE TABLE IF NOT EXISTS negotiations (
@@ -50,12 +85,14 @@ async function ensureTablesExist() {
     try {
       await sql`ALTER TABLE deals ADD COLUMN IF NOT EXISTS description TEXT`;
       await sql`ALTER TABLE deals ADD COLUMN IF NOT EXISTS budget TEXT`;
+      await sql`ALTER TABLE deals ADD COLUMN IF NOT EXISTS phone TEXT`;
+      await sql`ALTER TABLE deals ADD COLUMN IF NOT EXISTS email TEXT`;
     } catch (e) { }
     
     dbInitialized = true;
     console.log("✅ Tables ready");
   } catch (err: any) {
-    console.error("❌ DB Error:", err.message);
+    console.error(" DB Error:", err.message);
   }
 }
 
@@ -68,7 +105,6 @@ function jsonResponse(data: any, status = 200) {
   });
 }
 
-// دالة مساعدة لضمان عدم وجود undefined
 function safeValue(val: any, defaultVal: string = ''): string {
   return val === undefined || val === null ? defaultVal : String(val);
 }
@@ -79,18 +115,22 @@ async function handler(req: Request): Promise<Response> {
   
   if (method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
 
+  // التحقق من API Key للـ Admin Endpoints
+  const authHeader = req.headers.get("Authorization");
+  const isValidAdmin = authHeader === `Bearer ${API_SECRET_KEY}`;
+
   try {
     await ensureTablesExist();
 
+    // Health Check
     if (method === "GET" && url.pathname === "/health") {
       await sql`SELECT 1`;
-      return jsonResponse({ status: "ok", version: "4.2.1", storage: "PostgreSQL", db_connected: true });
+      return jsonResponse({ status: "ok", version: "5.0.0", storage: "PostgreSQL", db_connected: true, telegram: !!TELEGRAM_TOKEN });
     }
 
+    // إنشاء شركة
     if (method === "POST" && url.pathname === "/api/v1/companies") {
       const body = await req.json();
-      
-      // التأكد من أن جميع القيم معرفة
       const name = safeValue(body.name, 'Unknown');
       const industry = safeValue(body.industry, 'General');
       const country = safeValue(body.country, 'Unknown');
@@ -105,6 +145,7 @@ async function handler(req: Request): Promise<Response> {
       return jsonResponse({ success: true, data: company });
     }
 
+    // تحليل شركة
     if (method === "POST" && url.pathname.startsWith("/api/v1/companies/") && url.pathname.endsWith("/analyze")) {
       const id = url.pathname.split("/")[4];
       if (!id) return jsonResponse({ error: "ID required" }, 400);
@@ -128,6 +169,7 @@ async function handler(req: Request): Promise<Response> {
       return jsonResponse({ success: true, data: { analysis, signals } });
     }
 
+    // إنشاء صفقة (Deal) - مع إشعار Telegram
     if (method === "POST" && url.pathname === "/api/v1/deals") {
       const body = await req.json();
       
@@ -135,15 +177,93 @@ async function handler(req: Request): Promise<Response> {
       const serviceId = safeValue(body.service_id, 'custom');
       const description = safeValue(body.description, '');
       const budget = safeValue(body.budget, '');
+      const phone = safeValue(body.phone, '');
+      const email = safeValue(body.email, '');
       
       const [deal] = await sql`
-        INSERT INTO deals (tenant_id, company_id, service_id, status, description, budget) 
-        VALUES ('tenant_1', ${companyId}::uuid, ${serviceId}, 'DISCOVERED', ${description}, ${budget}) 
+        INSERT INTO deals (tenant_id, company_id, service_id, status, description, budget, phone, email) 
+        VALUES ('tenant_1', ${companyId}::uuid, ${serviceId}, 'DISCOVERED', ${description}, ${budget}, ${phone}, ${email}) 
         RETURNING *
       `;
+      
+      // جلب بيانات الشركة للإشعار
+      const companyRes = await sql`SELECT name, industry FROM companies WHERE id = ${companyId}::uuid`;
+      const company = companyRes[0];
+      
+      // إرسال إشعار Telegram
+      const message = `
+ <b>طلب خدمة جديد!</b>
+
+🆔 <b>رقم الصفقة:</b> <code>${deal.id}</code>
+🏢 <b>الشركة:</b> ${company?.name || 'غير معروف'}
+ <b>المجال:</b> ${company?.industry || 'غير محدد'}
+️ <b>الخدمة:</b> ${serviceId}
+📞 <b>الهاتف:</b> ${phone || 'غير متوفر'}
+📧 <b>البريد:</b> ${email || 'غير متوفر'}
+
+📝 <b>الوصف:</b>
+${description.substring(0, 200)}${description.length > 200 ? '...' : ''}
+
+⏰ <b>الوقت:</b> ${new Date().toLocaleString('ar-SA')}
+      `;
+      
+      await sendTelegramNotification(message);
+      
       return jsonResponse({ success: true, data: deal });
     }
 
+    // ==================== ADMIN ENDPOINTS ====================
+    
+    // جلب جميع الطلبات (Admin فقط)
+    if (method === "GET" && url.pathname === "/api/admin/deals") {
+      if (!isValidAdmin) return jsonResponse({ error: "Unauthorized" }, 401);
+      
+      const deals = await sql`
+        SELECT d.*, c.name as company_name, c.industry as company_industry
+        FROM deals d
+        LEFT JOIN companies c ON d.company_id = c.id
+        ORDER BY d.created_at DESC
+      `;
+      return jsonResponse({ success: true, data: deals });
+    }
+
+    // جلب إحصائيات (Admin فقط)
+    if (method === "GET" && url.pathname === "/api/admin/stats") {
+      if (!isValidAdmin) return jsonResponse({ error: "Unauthorized" }, 401);
+      
+      const totalDeals = await sql`SELECT COUNT(*) as count FROM deals`;
+      const pendingDeals = await sql`SELECT COUNT(*) as count FROM deals WHERE status = 'DISCOVERED'`;
+      const completedDeals = await sql`SELECT COUNT(*) as count FROM deals WHERE status = 'COMPLETED'`;
+      const totalCompanies = await sql`SELECT COUNT(*) as count FROM companies`;
+      
+      return jsonResponse({ 
+        success: true, 
+        data: {
+          total_deals: totalDeals[0].count,
+          pending_deals: pendingDeals[0].count,
+          completed_deals: completedDeals[0].count,
+          total_companies: totalCompanies[0].count
+        }
+      });
+    }
+
+    // تحديث حالة الطلب (Admin فقط)
+    if (method === "PUT" && url.pathname.startsWith("/api/admin/deals/")) {
+      if (!isValidAdmin) return jsonResponse({ error: "Unauthorized" }, 401);
+      
+      const dealId = url.pathname.split("/")[4];
+      const body = await req.json();
+      
+      await sql`
+        UPDATE deals 
+        SET status = ${body.status}, updated_at = NOW()
+        WHERE id = ${dealId}::uuid
+      `;
+      
+      return jsonResponse({ success: true, message: "Status updated" });
+    }
+
+    // Negotiate Deal
     if (method === "POST" && url.pathname.startsWith("/api/v1/deals/") && url.pathname.endsWith("/negotiate")) {
       const dealId = url.pathname.split("/")[4];
       const body = await req.json();
@@ -156,6 +276,7 @@ async function handler(req: Request): Promise<Response> {
       return jsonResponse({ success: true, message: "Recorded" });
     }
 
+    // Negotiation Summary
     if (method === "GET" && url.pathname.startsWith("/api/v1/deals/") && url.pathname.endsWith("/negotiation-summary")) {
       const dealId = url.pathname.split("/")[4];
       const history = await sql`SELECT * FROM negotiations WHERE deal_id = ${dealId}::uuid ORDER BY created_at ASC`;
@@ -171,5 +292,5 @@ async function handler(req: Request): Promise<Response> {
   }
 }
 
-console.log("🚀 B2B Pipeline Pro v4.2.1 (Fixed Undefined Values)");
+console.log("🚀 B2B Pipeline Pro v5.0.0 (with Telegram Notifications)");
 Deno.serve(handler);

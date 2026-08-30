@@ -1,0 +1,69 @@
+{
+  "projects": [
+    {
+      "id": 1,
+      "title": "ALSHAMS Group - الهوية البصرية والموشن ديزاين",
+      "category": "branding",
+      "categoryName": "هوية بصرية + موشن",
+      "client": "ALSHAMS Group",
+      "description": "تصميم هوية بصرية كاملة مع موشن ديزاين احترافي لمنتج دوائي",
+      "services": ["تصميم شعار", "هوية بصرية", "موشن ديزاين 3D", "تصوير منتج"],
+      "beforeImage": "https://i.imgur.com/placeholder-before.jpg",
+      "afterImage": "https://i.imgur.com/ALSHAMS-after.png",
+      "videoUrl": "https://player.vimeo.com/video/VIDEO_ID",
+      "images": [
+        "https://i.imgur.com/image1.png",
+        "https://i.imgur.com/image2.png",
+        "https://i.imgur.com/image3.png"
+      ],
+      "results": [
+        "تصميم هوية بصرية كاملة (شعار، ألوان، خطوط)",
+        "إنشاء موشن ديزاين احترافي للمنتج (فيديو 3D)",
+        "إبراز ميزات المنتج (الحماية، الترطيب، التحكم في الزيوت)"
+      ],
+      "date": "2024-01",
+      "featured": true
+    },
+    {
+      "id": 2,
+      "title": "Soli Coffee - محتوى السوشيال ميديا",
+      "category": "social-media",
+      "categoryName": "سوشيال ميديا",
+      "client": "Soli Coffee",
+      "description": "تصميم منشورات وفيديوهات تفاعلية لعلامة قهوة متخصصة",
+      "services": ["تصميم منشورات", "موشن ديزاين", "إدارة سوشيال ميديا"],
+      "beforeImage": "https://i.imgur.com/coffee-before.jpg",
+      "afterImage": "https://i.imgur.com/coffee-after.jpg",
+      "results": [
+        "زيادة التفاعل بنسبة 250%",
+        "15 منشور شهري (صور + فيديوهات)",
+        "تأثيرات حركة: سكب القهوة، البخار، دوران الأكواب"
+      ],
+      "date": "2024-02",
+      "featured": true
+    },
+    {
+      "id": 3,
+      "title": "مطعم النور - المنيو الرقمي التفاعلي",
+      "category": "web",
+      "categoryName": "تطوير ويب",
+      "client": "مطعم النور",
+      "description": "تحويل المنيو الورقي إلى تجربة رقمية تفاعلية مع QR Code",
+      "services": ["تصميم UI/UX", "تطوير ويب", "QR Code", "نظام إدارة"],
+      "results": [
+        "تصميم منيو رقمي تفاعلي",
+        "نظام تحديث فوري للأسعار",
+        "تقليل وقت الطلب بنسبة 40%"
+      ],
+      "date": "2024-03",
+      "featured": false
+    }
+  ],
+  "categories": [
+    { "id": "all", "name": "جميع الأعمال", "icon": "" },
+    { "id": "branding", "name": "هوية بصرية", "icon": "" },
+    { "id": "motion", "name": "موشن ديزاين", "icon": "" },
+    { "id": "web", "name": "تطوير ويب", "icon": "" },
+    { "id": "social-media", "name": "سوشيال ميديا", "icon": "" }
+  ]
+}

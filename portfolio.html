@@ -8,24 +8,96 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Tajawal', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
-        .before-after-container { position: relative; overflow: hidden; }
-        .before-image, .after-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
-        .after-image { clip-path: inset(0 50% 0 0); }
-        .slider-handle { position: absolute; top: 0; bottom: 0; width: 4px; background: white; cursor: ew-resize; z-index: 10; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
-        .slider-button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-        .project-card { transition: all 0.3s ease; }
-        .project-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        body { 
+            font-family: 'Tajawal', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+        }
+        .glass-effect { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px); 
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); 
+        }
+        .project-card { 
+            transition: all 0.3s ease; 
+        }
+        .project-card:hover { 
+            transform: translateY(-10px); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2); 
+        }
+        .category-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .fade-in { 
+            animation: fadeIn 0.5s ease-in; 
+        }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(20px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .before-after-slider {
+            position: relative;
+            overflow: hidden;
+            cursor: ew-resize;
+        }
+        .ba-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .ba-after {
+            clip-path: inset(0 50% 0 0);
+        }
+        .ba-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: white;
+            left: 50%;
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .ba-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <!-- Header -->
     <header class="glass-effect rounded-2xl p-6 mb-6">
-        <div class="flex justify-between items-center">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
                     <span class="text-white text-2xl"></span>
@@ -35,231 +107,364 @@
                     <p class="text-sm text-gray-600">تحولات إبداعية لعلامات تجارية ناجحة</p>
                 </div>
             </div>
-            <a href="index.html" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:opacity-90">العودة للرئيسية</a>
+            <div class="flex gap-3">
+                <a href="index.html" class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg font-bold hover:bg-gray-300">الرئيسية</a>
+                <button onclick="scrollToProjects()" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:opacity-90">أضف مشروعك</button>
+            </div>
         </div>
     </header>
 
-    <!-- Portfolio Grid -->
-    <div class="grid gap-8 max-w-7xl mx-auto">
-
-        <!-- Project 1: ALSHAMS Group - Branding & Motion Design -->
-        <div class="glass-effect rounded-2xl p-8 fade-in">
-            <div class="flex items-center gap-3 mb-6">
-                <span class="text-3xl">🎨</span>
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">ALSHAMS Group - الهوية البصرية والموشن ديزاين</h2>
-                    <p class="text-gray-600">تصميم هوية بصرية + موشن ديزاين لمنتج دوائي</p>
-                </div>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-6 mb-6">
-                <!-- Before/After Logo -->
-                <div class="bg-gray-100 rounded-xl p-4">
-                    <h3 class="font-bold text-gray-700 mb-4 text-center">تصميم الشعار</h3>
-                    <div class="relative h-64 before-after-container rounded-lg overflow-hidden bg-white">
-                        <img src="https://i.imgur.com/placeholder-before.jpg" alt="Before" class="before-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22%3E%3Crect fill=%22%23ddd%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22%23666%22 font-family=%22Arial%22 font-size=%2220%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22&gt;شعار بسيط&lt;/text%3E%3C/svg%3E'">
-                        <img src="https://i.imgur.com/ALSHAMS-after.png" alt="After" class="after-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22%3E%3Crect fill=%22%230F2A4D%22 width=%22400%22 height=%22300%22/%3E%3Cpath fill=%22%237DB8FF%22 d=%22M100,50 L150,50 L150,100 L200,100 L200,50 L250,50 L250,150 L200,150 L200,200 L150,200 L150,150 L100,150 Z%22/%3E%3Ctext fill=%22white%22 font-family=%22Arial%22 font-size=%2224%22 x=%2250%25%22 y=%2285%25%22 text-anchor=%22middle%22&gt;ALSHAMS GROUP&lt;/text%3E%3C/svg%3E'">
-                        <div class="slider-handle" style="left: 50%;">
-                            <div class="slider-button">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M18 6L6 18M6 6l12 12"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex justify-between text-sm text-gray-600 mt-2">
-                        <span>قبل</span>
-                        <span>بعد</span>
-                    </div>
-                </div>
-
-                <!-- Before/After Motion Design -->
-                <div class="bg-gray-100 rounded-xl p-4">
-                    <h3 class="font-bold text-gray-700 mb-4 text-center">الموشن ديزاين للمنتج</h3>
-                    <div class="relative h-64 before-after-container rounded-lg overflow-hidden bg-white">
-                        <img src="https://i.imgur.com/product-before.jpg" alt="Before" class="before-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22%23666%22 font-family=%22Arial%22 font-size=%2218%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22&gt;صورة منتج عادية&lt;/text%3E%3C/svg%3E'">
-                        <img src="https://i.imgur.com/product-after.png" alt="After" class="after-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22%3E%3Cdefs%3E%3ClinearGradient id=%22grad%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%220%25%22%3E%3Cstop offset=%220%25%22 style=%22stop-color:%23667eea;stop-opacity:1%22 /%3E%3Cstop offset=%22100%25%22 style=%22stop-color:%23f093fb;stop-opacity:1%22 /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill=%22url(%23grad)%22 width=%22400%22 height=%22300%22/%3E%3Cellipse cx=%22200%22 cy=%22200%22 rx=%2280%22 ry=%2220%22 fill=%22rgba(0,0,0,0.2)%22/%3E%3Crect x=%22150%22 y=%2280%22 width=%22100%22 height=%22140%22 rx=%2210%22 fill=%22white%22/%3E%3Ctext fill=%22%23667eea%22 font-family=%22Arial%22 font-size=%2216%22 x=%22200%22 y=%22160%22 text-anchor=%22middle%22&gt;dr.Clinic&lt;/text%3E%3C/svg%3E'">
-                        <div class="slider-handle" style="left: 50%;">
-                            <div class="slider-button">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M18 6L6 18M6 6l12 12"/>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex justify-between text-sm text-gray-600 mt-2">
-                        <span>صورة ثابتة</span>
-                        <span>موشن ديزاين</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-blue-50 rounded-lg p-4 border-r-4 border-blue-500">
-                <h4 class="font-bold text-blue-800 mb-2">📋 تفاصيل المشروع:</h4>
-                <ul class="list-disc list-inside text-blue-700 space-y-1">
-                    <li>تصميم هوية بصرية كاملة (شعار، ألوان، خطوط)</li>
-                    <li>إنشاء موشن ديزاين احترافي للمنتج (فيديو 3D)</li>
-                    <li>إبراز ميزات المنتج (الحماية، الترطيب، التحكم في الزيوت)</li>
-                    <li>تأثيرات بصرية: رذاذ الماء، الفقاعات، الإضاءة السينمائية</li>
-                </ul>
-            </div>
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="glass-effect rounded-xl p-6 text-center">
+            <div class="text-3xl font-bold text-purple-600" id="totalProjects">0</div>
+            <div class="text-gray-600 text-sm">مشروع منجز</div>
         </div>
-
-        <!-- Project 2: Coffee Brand - Social Media Content -->
-        <div class="glass-effect rounded-2xl p-8 fade-in">
-            <div class="flex items-center gap-3 mb-6">
-                <span class="text-3xl">☕</span>
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">Soli Coffee - محتوى السوشيال ميديا</h2>
-                    <p class="text-gray-600">تصميم منشورات + موشن ديزاين لعلامة قهوة متخصصة</p>
-                </div>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-4 mb-6">
-                <div class="bg-gray-100 rounded-xl p-4 text-center">
-                    <div class="h-48 bg-gradient-to-br from-amber-700 to-amber-900 rounded-lg flex items-center justify-center mb-3">
-                        <span class="text-white text-6xl">📱</span>
-                    </div>
-                    <h4 class="font-bold text-gray-700">قبل</h4>
-                    <p class="text-sm text-gray-600">صور عادية للمنتج</p>
-                </div>
-                <div class="flex items-center justify-center">
-                    <svg class="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
-                    </svg>
-                </div>
-                <div class="bg-gradient-to-br from-amber-600 to-orange-700 rounded-xl p-4 text-center text-white">
-                    <div class="h-48 rounded-lg flex items-center justify-center mb-3 relative overflow-hidden">
-                        <span class="text-6xl relative z-10"></span>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                    </div>
-                    <h4 class="font-bold">بعد</h4>
-                    <p class="text-sm">فيديوهات انستقرام وتيك توك تفاعلية</p>
-                </div>
-            </div>
-
-            <div class="bg-amber-50 rounded-lg p-4 border-r-4 border-amber-500">
-                <h4 class="font-bold text-amber-800 mb-2">✨ النتائج:</h4>
-                <ul class="list-disc list-inside text-amber-700 space-y-1">
-                    <li>زيادة التفاعل بنسبة 250%</li>
-                    <li>15 منشور شهري (صور + فيديوهات)</li>
-                    <li>تأثيرات حركة: سكب القهوة، البخار، دوران الأكواب</li>
-                </ul>
-            </div>
+        <div class="glass-effect rounded-xl p-6 text-center">
+            <div class="text-3xl font-bold text-blue-600" id="totalClients">0</div>
+            <div class="text-gray-600 text-sm">عميل سعيد</div>
         </div>
-
-        <!-- Project 3: Restaurant - Digital Menu -->
-        <div class="glass-effect rounded-2xl p-8 fade-in">
-            <div class="flex items-center gap-3 mb-6">
-                <span class="text-3xl">📋</span>
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">مطعم النور - المنيو الرقمي التفاعلي</h2>
-                    <p class="text-gray-600">تحويل المنيو الورقي إلى تجربة رقمية تفاعلية</p>
-                </div>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-gray-100 rounded-xl p-6">
-                    <h3 class="font-bold text-gray-700 mb-4 text-center">المنيو التقليدي (PDF)</h3>
-                    <div class="bg-white h-64 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-                        <div class="text-center text-gray-500">
-                            <span class="text-4xl">📄</span>
-                            <p class="mt-2">قائمة طعام ورقية مملة</p>
-                            <p class="text-sm">صعبة التحديث</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-gradient-to-br from-green-500 to-teal-600 rounded-xl p-6 text-white">
-                    <h3 class="font-bold mb-4 text-center">المنيو الرقمي التفاعلي</h3>
-                    <div class="bg-white/20 backdrop-blur h-64 rounded-lg flex items-center justify-center">
-                        <div class="text-center">
-                            <span class="text-4xl">📱</span>
-                            <p class="mt-2 font-bold">تطبيق ويب تفاعلي</p>
-                            <p class="text-sm">QR Code + صور متحركة</p>
-                            <p class="text-sm">تحديث فوري للأسعار</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="glass-effect rounded-xl p-6 text-center">
+            <div class="text-3xl font-bold text-green-600" id="totalCategories">0</div>
+            <div class="text-gray-600 text-sm">تخصص</div>
         </div>
-
-        <!-- Project 4: E-commerce - Website Design -->
-        <div class="glass-effect rounded-2xl p-8 fade-in">
-            <div class="flex items-center gap-3 mb-6">
-                <span class="text-3xl">🛒</span>
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800">متجر التمور الفاخرة - تصميم متجر إلكتروني</h2>
-                    <p class="text-gray-600">تحويل متجر تقليدي إلى منصة إلكترونية متكاملة</p>
-                </div>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                    <h4 class="font-bold text-gray-700">❌ قبل (متجر فعلي فقط):</h4>
-                    <ul class="list-disc list-inside text-gray-600 space-y-2">
-                        <li>مبيعات محدودة بالمنطقة الجغرافية</li>
-                        <li>لا يوجد وجود رقمي</li>
-                        <li>صعوبة في عرض المنتجات</li>
-                        <li>طلب يدوي عبر الهاتف</li>
-                    </ul>
-                </div>
-                <div class="space-y-4">
-                    <h4 class="font-bold text-green-700">✅ بعد (متجر إلكتروني):</h4>
-                    <ul class="list-disc list-inside text-green-700 space-y-2">
-                        <li>وصول لجميع مناطق السعودية</li>
-                        <li>تصميم عصري يعكس الفخامة</li>
-                        <li>عرض تفاعلي للمنتجات مع صور 360°</li>
-                        <li>نظام طلبات ودفع إلكتروني</li>
-                        <li>لوحة تحكم لإدارة المخزون</li>
-                    </ul>
-                </div>
-            </div>
+        <div class="glass-effect rounded-xl p-6 text-center">
+            <div class="text-3xl font-bold text-orange-600">100%</div>
+            <div class="text-gray-600 text-sm">نسبة الرضا</div>
         </div>
-
     </div>
 
-    <!-- CTA Section -->
+    <!-- Filter Buttons -->
+    <div class="glass-effect rounded-2xl p-6 mb-8">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">تصفية حسب التخصص:</h3>
+        <div class="flex flex-wrap gap-3" id="categoryFilters">
+            <!-- سيتم ملؤها تلقائياً -->
+        </div>
+    </div>
+
+    <!-- Projects Grid -->
+    <div id="projectsGrid" class="grid gap-8 max-w-7xl mx-auto">
+        <!-- سيتم ملؤها تلقائياً من projects.json -->
+    </div>
+
+    <!-- Project Detail Modal -->
+    <div id="projectModal" class="modal">
+        <div class="glass-effect rounded-2xl max-w-5xl w-full mx-4 my-8 p-8 relative fade-in">
+            <button onclick="closeModal()" class="absolute top-4 left-4 text-gray-500 hover:text-gray-700 text-3xl font-bold z-10"></button>
+            <div id="modalContent">
+                <!-- سيتم ملؤها تلقائياً -->
+            </div>
+        </div>
+    </div>
+
+    <!-- How to Add Guide -->
     <div class="max-w-4xl mx-auto mt-12 mb-8">
-        <div class="glass-effect rounded-2xl p-8 text-center">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4"> جاهز لتحويل علامتك التجارية؟</h2>
-            <p class="text-gray-600 mb-6">نحن هنا لمساعدتك في رفع مستوى حضورك الرقمي</p>
-            <a href="index.html#services" class="inline-block bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:opacity-90">
-                ابدأ مشروعك الآن
+        <div class="glass-effect rounded-2xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">📝 كيف تضيف مشروع جديد؟</h2>
+            <div class="bg-gray-100 rounded-lg p-6 font-mono text-sm text-gray-700 mb-4">
+                <p class="mb-2"><strong>1. افتح ملف projects.json</strong></p>
+                <p class="mb-2"><strong>2. أضف مشروع جديد في مصفوفة "projects":</strong></p>
+                <pre class="bg-white p-4 rounded mt-2">{
+  "id": 4,
+  "title": "اسم المشروع",
+  "category": "branding",
+  "categoryName": "هوية بصرية",
+  "client": "اسم العميل",
+  "description": "وصف مختصر للمشروع",
+  "services": ["خدمة 1", "خدمة 2"],
+  "beforeImage": "رابط الصورة قبل",
+  "afterImage": "رابط الصورة بعد",
+  "results": ["نتيجة 1", "نتيجة 2"],
+  "date": "2024-04",
+  "featured": true
+}</pre>
+                <p class="mt-4"><strong>3. احفظ الملف وارفعه على GitHub</strong></p>
+                <p><strong>4. سيتم تحديث المعرض تلقائياً!</strong> ✨</p>
+            </div>
+            <a href="https://github.com/dfgfrggerrttt-maker/b2b-pipeline-pro/edit/main/projects.json" target="_blank" class="inline-block bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-bold hover:opacity-90">
+                تعديل المشاريع على GitHub
             </a>
         </div>
     </div>
 
     <script>
-        // Before/After Slider Functionality
-        document.querySelectorAll('.before-after-container').forEach(container => {
-            const slider = container.querySelector('.slider-handle');
-            const afterImage = container.querySelector('.after-image');
-            let isDragging = false;
+        let allProjects = [];
+        let currentFilter = 'all';
 
-            const updateSlider = (x) => {
-                const rect = container.getBoundingClientRect();
-                let percentage = ((x - rect.left) / rect.width) * 100;
-                percentage = Math.max(0, Math.min(100, percentage));
+        // Load projects from JSON
+        async function loadProjects() {
+            try {
+                const response = await fetch('projects.json');
+                const data = await response.json();
+                allProjects = data.projects;
                 
-                slider.style.left = percentage + '%';
-                afterImage.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
+                // Update stats
+                document.getElementById('totalProjects').textContent = allProjects.length;
+                document.getElementById('totalClients').textContent = new Set(allProjects.map(p => p.client)).size;
+                document.getElementById('totalCategories').textContent = data.categories.length - 1;
+                
+                // Create category filters
+                createCategoryFilters(data.categories);
+                
+                // Display projects
+                displayProjects(allProjects);
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                document.getElementById('projectsGrid').innerHTML = 
+                    '<div class="text-center text-red-600 p-8">حدث خطأ في تحميل المشاريع. تأكد من وجود ملف projects.json</div>';
+            }
+        }
+
+        function createCategoryFilters(categories) {
+            const container = document.getElementById('categoryFilters');
+            container.innerHTML = categories.map(cat => `
+                <button onclick="filterProjects('${cat.id}')" 
+                        class="category-btn px-6 py-2 rounded-lg font-bold border-2 border-gray-300 hover:border-purple-500 transition ${cat.id === 'all' ? 'active' : ''}"
+                        data-category="${cat.id}">
+                    ${cat.icon} ${cat.name}
+                </button>
+            `).join('');
+        }
+
+        function displayProjects(projects) {
+            const grid = document.getElementById('projectsGrid');
+            
+            if (projects.length === 0) {
+                grid.innerHTML = '<div class="text-center text-gray-600 p-12">لا توجد مشاريع لعرضها</div>';
+                return;
+            }
+
+            grid.innerHTML = projects.map(project => `
+                <div class="glass-effect rounded-2xl p-6 project-card fade-in" data-category="${project.category}">
+                    ${project.featured ? '<div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold inline-block mb-4">مشروع مميز</div>' : ''}
+                    
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-1">${project.title}</h3>
+                            <p class="text-gray-600 text-sm">${project.client}</p>
+                        </div>
+                        <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-bold">${project.categoryName}</span>
+                    </div>
+
+                    <p class="text-gray-700 mb-4">${project.description}</p>
+
+                    ${project.beforeImage && project.afterImage ? `
+                    <div class="relative h-64 mb-4 before-after-slider rounded-lg overflow-hidden bg-gray-100" onclick="openProjectModal(${project.id})">
+                        <img src="${project.beforeImage}" alt="Before" class="ba-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22%3E%3Crect fill=%22%23ddd%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22%23666%22 font-family=%22Arial%22 font-size=%2220%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22&gt;قبل&lt;/text%3E%3C/svg%3E'">
+                        <img src="${project.afterImage}" alt="After" class="ba-image ba-after" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22%3E%3Crect fill=%22%23667eea%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22white%22 font-family=%22Arial%22 font-size=%2220%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22&gt;بعد&lt;/text%3E%3C/svg%3E'">
+                        <div class="ba-handle">
+                            <div class="ba-button">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 6L6 18M6 6l12 12"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${project.services.map(s => `<span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm">${s}</span>`).join('')}
+                    </div>
+
+                    ${project.results ? `
+                    <div class="bg-green-50 rounded-lg p-4 mb-4 border-r-4 border-green-500">
+                        <h4 class="font-bold text-green-800 mb-2">✨ النتائج:</h4>
+                        <ul class="list-disc list-inside text-green-700 text-sm space-y-1">
+                            ${project.results.slice(0, 2).map(r => `<li>${r}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+
+                    <button onclick="openProjectModal(${project.id})" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-lg font-bold hover:opacity-90">
+                        عرض التفاصيل الكاملة
+                    </button>
+                </div>
+            `).join('');
+
+            // Initialize before/after sliders
+            initBeforeAfterSliders();
+        }
+
+        function initBeforeAfterSliders() {
+            document.querySelectorAll('.before-after-slider').forEach(slider => {
+                const afterImage = slider.querySelector('.ba-after');
+                const handle = slider.querySelector('.ba-handle');
+                let isDragging = false;
+
+                const updateSlider = (x) => {
+                    const rect = slider.getBoundingClientRect();
+                    let percentage = ((x - rect.left) / rect.width) * 100;
+                    percentage = Math.max(0, Math.min(100, percentage));
+                    
+                    handle.style.left = percentage + '%';
+                    afterImage.style.clipPath = `inset(0 ${100 - percentage}% 0 0)`;
+                };
+
+                handle.addEventListener('mousedown', () => isDragging = true);
+                document.addEventListener('mouseup', () => isDragging = false);
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                    updateSlider(e.clientX);
+                });
+
+                slider.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    updateSlider(e.clientX);
+                });
+
+                // Touch support
+                handle.addEventListener('touchstart', () => isDragging = true);
+                document.addEventListener('touchend', () => isDragging = false);
+                document.addEventListener('touchmove', (e) => {
+                    if (!isDragging) return;
+                    updateSlider(e.touches[0].clientX);
+                });
+            });
+        }
+
+        function filterProjects(category) {
+            currentFilter = category;
+            
+            // Update active button
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                if (btn.dataset.category === category) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Filter projects
+            const filtered = category === 'all' 
+                ? allProjects 
+                : allProjects.filter(p => p.category === category);
+            
+            displayProjects(filtered);
+        }
+
+        function openProjectModal(projectId) {
+            const project = allProjects.find(p => p.id === projectId);
+            if (!project) return;
+
+            const modal = document.getElementById('projectModal');
+            const content = document.getElementById('modalContent');
+
+            content.innerHTML = `
+                <div class="flex items-center gap-3 mb-6">
+                    <span class="text-4xl">${getCategoryIcon(project.category)}</span>
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">${project.title}</h2>
+                        <p class="text-gray-600">${project.client} • ${project.date}</p>
+                    </div>
+                </div>
+
+                ${project.beforeImage && project.afterImage ? `
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">قبل وبعد</h3>
+                    <div class="relative h-96 before-after-slider rounded-lg overflow-hidden bg-gray-100">
+                        <img src="${project.beforeImage}" alt="Before" class="ba-image">
+                        <img src="${project.afterImage}" alt="After" class="ba-image ba-after">
+                        <div class="ba-handle">
+                            <div class="ba-button">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 6L6 18M6 6l12 12"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+
+                ${project.videoUrl ? `
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">فيديو المشروع</h3>
+                    <div class="aspect-video rounded-lg overflow-hidden">
+                        <iframe src="${project.videoUrl}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen class="w-full h-full"></iframe>
+                    </div>
+                </div>
+                ` : ''}
+
+                ${project.images && project.images.length > 0 ? `
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">معرض الصور</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        ${project.images.map(img => `
+                            <img src="${img}" alt="Project image" class="rounded-lg hover:opacity-90 transition cursor-pointer" onclick="window.open('${img}', '_blank')">
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-blue-50 rounded-lg p-6 border-r-4 border-blue-500">
+                        <h4 class="font-bold text-blue-800 mb-3">📋 الخدمات المقدمة:</h4>
+                        <ul class="list-disc list-inside text-blue-700 space-y-2">
+                            ${project.services.map(s => `<li>${s}</li>`).join('')}
+                        </ul>
+                    </div>
+
+                    ${project.results ? `
+                    <div class="bg-green-50 rounded-lg p-6 border-r-4 border-green-500">
+                        <h4 class="font-bold text-green-800 mb-3">✨ النتائج:</h4>
+                        <ul class="list-disc list-inside text-green-700 space-y-2">
+                            ${project.results.map(r => `<li>${r}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <div class="mt-6 flex gap-4">
+                    <a href="index.html#services" class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-lg font-bold text-center hover:opacity-90">
+                        اطلب خدمة مشابهة
+                    </a>
+                    <button onclick="closeModal()" class="px-8 py-4 bg-gray-200 text-gray-800 rounded-lg font-bold hover:bg-gray-300">
+                        إغلاق
+                    </button>
+                </div>
+            `;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            initBeforeAfterSliders();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('projectModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                'branding': '',
+                'motion': '',
+                'web': '',
+                'social-media': ''
             };
+            return icons[category] || '';
+        }
 
-            slider.addEventListener('mousedown', () => isDragging = true);
-            document.addEventListener('mouseup', () => isDragging = false);
-            document.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                updateSlider(e.clientX);
-            });
+        function scrollToProjects() {
+            document.getElementById('projectsGrid').scrollIntoView({ behavior: 'smooth' });
+        }
 
-            // Touch support
-            slider.addEventListener('touchstart', () => isDragging = true);
-            document.addEventListener('touchend', () => isDragging = false);
-            document.addEventListener('touchmove', (e) => {
-                if (!isDragging) return;
-                updateSlider(e.touches[0].clientX);
-            });
+        // Close modal on outside click
+        document.getElementById('projectModal').addEventListener('click', (e) => {
+            if (e.target.id === 'projectModal') {
+                closeModal();
+            }
         });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Initialize
+        loadProjects();
     </script>
 </body>
 </html>

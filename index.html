@@ -60,6 +60,27 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        .question-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-right: 4px solid #667eea;
+        }
+        .option-btn {
+            transition: all 0.3s ease;
+        }
+        .option-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.02);
+        }
+        .option-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -76,55 +97,214 @@
                     <p class="text-sm text-gray-600">تحليل ذكي بالذكاء الاصطناعي</p>
                 </div>
             </div>
-            <a href="#analyze" class="btn-primary text-white px-6 py-2 rounded-lg font-bold">ابدأ الآن</a>
+            <button onclick="skipToServices()" class="btn-primary text-white px-6 py-2 rounded-lg font-bold">طلب خدمة مباشرة</button>
         </div>
     </header>
 
-    <!-- Analysis Form -->
-    <section id="analyze" class="glass-effect rounded-2xl p-8 mb-6">
-        <h2 class="text-3xl font-bold text-center mb-2">🔍 التحليل المجاني</h2>
-        <p class="text-center text-gray-600 mb-6">أدخل بيانات شركتك واحصل على تقرير شامل</p>
-        
-        <form id="analysisForm" class="space-y-4 max-w-2xl mx-auto">
-            <div>
-                <label class="block text-gray-700 font-bold mb-2">اسم الشركة *</label>
-                <input type="text" id="companyName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 transition" placeholder="مثال: شركة النور للتقنية">
+    <!-- Survey Section -->
+    <section id="survey" class="glass-effect rounded-2xl p-8 mb-6">
+        <div class="text-center mb-6">
+            <h2 class="text-3xl font-bold mb-2">🔍 تحليل شامل لشركتك</h2>
+            <p class="text-gray-600">أجب على هذه الأسئلة البسيطة للحصول على تقرير مخصص</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-6">
+            <div class="flex justify-between text-sm text-gray-600 mb-2">
+                <span>التقدم</span>
+                <span id="progressText">0%</span>
             </div>
-            <div>
-                <label class="block text-gray-700 font-bold mb-2">المجال *</label>
-                <select id="industry" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 transition">
-                    <option value="">اختر المجال</option>
-                    <option value="مطعم">مطعم / كافيه</option>
-                    <option value="متجر">متجر إلكتروني</option>
-                    <option value="خدمات">شركة خدمات</option>
-                    <option value="تقنية">شركة تقنية</option>
-                    <option value="تعليم">مؤسسة تعليمية</option>
-                    <option value="صحة">مركز صحي</option>
-                    <option value="أخرى">أخرى</option>
-                </select>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="progressBar" class="progress-bar h-2 rounded-full" style="width: 0%"></div>
             </div>
-            <div>
-                <label class="block text-gray-700 font-bold mb-2">الدولة *</label>
-                <input type="text" id="country" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 transition" placeholder="مثال: السعودية">
+        </div>
+
+        <!-- Company Info (Step 0) -->
+        <div id="step0" class="step fade-in">
+            <h3 class="text-xl font-bold mb-4">📋 معلومات الشركة</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">اسم الشركة *</label>
+                    <input type="text" id="companyName" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="مثال: شركة النور">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">المجال *</label>
+                    <select id="industry" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500">
+                        <option value="">اختر المجال</option>
+                        <option value="مطعم">مطعم / كافيه</option>
+                        <option value="متجر">متجر إلكتروني</option>
+                        <option value="خدمات">شركة خدمات</option>
+                        <option value="تقنية">شركة تقنية</option>
+                        <option value="تعليم">مؤسسة تعليمية</option>
+                        <option value="صحة">مركز صحي</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">الدولة *</label>
+                    <input type="text" id="country" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="مثال: السعودية">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">الموقع الإلكتروني (اختياري)</label>
+                    <input type="url" id="website" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="https://example.com">
+                </div>
+                <button onclick="nextStep()" class="w-full btn-primary text-white py-4 rounded-lg font-bold text-lg">
+                    التالي ←
+                </button>
             </div>
-            <div>
-                <label class="block text-gray-700 font-bold mb-2">الموقع الإلكتروني (اختياري)</label>
-                <input type="url" id="website" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 transition" placeholder="https://example.com">
+        </div>
+
+        <!-- Questions (Steps 1-4) -->
+        <div id="step1" class="step hidden fade-in">
+            <div class="question-card rounded-xl p-6 mb-4">
+                <h3 class="text-lg font-bold mb-4"> 1. المظهر الرقمي والهوية</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <p class="font-bold mb-2">هل تصميم موقعك أو صفحاتك يبدو حديثاً ويعكس جودة خدماتك بدقة؟</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="selectOption(1, 1, 'نعم، حديث واحترافي')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">نعم</button>
+                            <button onclick="selectOption(1, 1, 'متوسط، يحتاج تحسين')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">متوسط</button>
+                            <button onclick="selectOption(1, 1, 'لا، قديم وغير احترافي')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">لا</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p class="font-bold mb-2">هل الشعار والألوان والرسالة التسويقية موحدة عبر جميع حساباتك؟</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="selectOption(1, 2, 'نعم، موحدة تماماً')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">نعم</button>
+                            <button onclick="selectOption(1, 2, 'جزئياً')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">جزئياً</button>
+                            <button onclick="selectOption(1, 2, 'لا، غير موحدة')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">لا</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p class="font-bold mb-2">إذا دخل عميل جديد لموقعك، هل يفهم نشاطك خلال 5 ثوانٍ؟</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="selectOption(1, 3, 'نعم، واضح جداً')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">نعم</button>
+                            <button onclick="selectOption(1, 3, 'إلى حد ما')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">إلى حد ما</button>
+                            <button onclick="selectOption(1, 3, 'لا، غامض')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">لا</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button type="submit" id="analyzeBtn" class="w-full btn-primary text-white py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2">
-                <span>ابدأ التحليل المجاني</span>
-            </button>
-        </form>
+            <div class="flex gap-2">
+                <button onclick="prevStep()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold">→ السابق</button>
+                <button onclick="nextStep()" class="flex-1 btn-primary text-white py-3 rounded-lg font-bold">التالي ←</button>
+            </div>
+        </div>
+
+        <div id="step2" class="step hidden fade-in">
+            <div class="question-card rounded-xl p-6 mb-4">
+                <h3 class="text-lg font-bold mb-4">⭐ 2. خدمة العملاء والانطباع العام</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <p class="font-bold mb-2">ما هو التقييم الإجمالي لنشاطك على Google Maps؟</p>
+                        <div class="grid grid-cols-5 gap-2">
+                            <button onclick="selectOption(2, 1, '5 نجوم')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">⭐⭐⭐⭐⭐</button>
+                            <button onclick="selectOption(2, 1, '4 نجوم')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">⭐⭐⭐⭐</button>
+                            <button onclick="selectOption(2, 1, '3 نجوم')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">⭐⭐⭐</button>
+                            <button onclick="selectOption(2, 1, 'نجمتين')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">⭐⭐</button>
+                            <button onclick="selectOption(2, 1, 'نجمة واحدة')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">⭐</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p class="font-bold mb-2">ما هي أكثر شكوى تتكرر من العملاء؟</p>
+                        <textarea id="complaints" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="3" placeholder="اكتب الشكاوى المتكررة..."></textarea>
+                    </div>
+                    
+                    <div>
+                        <p class="font-bold mb-2">كم يستغرق فريقك للرد على استفسارات العملاء؟</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="selectOption(2, 3, 'دقائق')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">دقائق</button>
+                            <button onclick="selectOption(2, 3, 'ساعات')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">ساعات</button>
+                            <button onclick="selectOption(2, 3, 'يوم أو أكثر')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">يوم+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="prevStep()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold">→ السابق</button>
+                <button onclick="nextStep()" class="flex-1 btn-primary text-white py-3 rounded-lg font-bold">التالي ←</button>
+            </div>
+        </div>
+
+        <div id="step3" class="step hidden fade-in">
+            <div class="question-card rounded-xl p-6 mb-4">
+                <h3 class="text-lg font-bold mb-4">️ 3. رحلة العميل وسهولة التعامل</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <p class="font-bold mb-2">هل خطوات الطلب/الحجز واضحة وسهلة؟</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="selectOption(3, 1, 'نعم، سهلة جداً')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">نعم</button>
+                            <button onclick="selectOption(3, 1, 'متوسطة')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">متوسطة</button>
+                            <button onclick="selectOption(3, 1, 'معقدة')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">معقدة</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p class="font-bold mb-2">هل سياسات الأسعار والاسترجاع معلنة وواضحة؟</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="selectOption(3, 2, 'نعم، واضحة')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">نعم</button>
+                            <button onclick="selectOption(3, 2, 'جزئياً')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">جزئياً</button>
+                            <button onclick="selectOption(3, 2, 'لا، غير واضحة')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">لا</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <p class="font-bold mb-2">هل توجد آلية لمتابعة العميل بعد الخدمة؟</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="selectOption(3, 3, 'نعم، نظام متكامل')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">نعم</button>
+                            <button onclick="selectOption(3, 3, 'بسيط')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">بسيط</button>
+                            <button onclick="selectOption(3, 3, 'لا يوجد')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">لا</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="prevStep()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold">→ السابق</button>
+                <button onclick="nextStep()" class="flex-1 btn-primary text-white py-3 rounded-lg font-bold">التالي ←</button>
+            </div>
+        </div>
+
+        <div id="step4" class="step hidden fade-in">
+            <div class="question-card rounded-xl p-6 mb-4">
+                <h3 class="text-lg font-bold mb-4">🏆 4. المقارنة مع المنافسين</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <p class="font-bold mb-2">ما هي الميزة التي تجعل العميل يختارك بدلاً من منافسيك؟</p>
+                        <textarea id="advantage" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="3" placeholder="اكتب ميزتك التنافسية..."></textarea>
+                    </div>
+                    
+                    <div>
+                        <p class="font-bold mb-2">هل مظهر صفحاتك أكثر احترافية من منافسيك؟</p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="selectOption(4, 2, 'نعم، أفضل بكثير')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">أفضل</button>
+                            <button onclick="selectOption(4, 2, 'مشابه')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">مشابه</button>
+                            <button onclick="selectOption(4, 2, 'أسوأ')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">أسوأ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="prevStep()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold">→ السابق</button>
+                <button onclick="startAnalysis()" class="flex-1 btn-success text-white py-3 rounded-lg font-bold">🚀 ابدأ التحليل</button>
+            </div>
+        </div>
 
         <!-- Results -->
-        <div id="results" class="hidden mt-8 fade-in max-w-2xl mx-auto">
+        <div id="results" class="hidden fade-in">
             <div class="bg-green-50 border-r-4 border-green-500 p-4 rounded-lg mb-6">
                 <h3 class="font-bold text-green-800 mb-1">✅ تم التحليل بنجاح!</h3>
                 <p class="text-green-700 text-sm">إليك تقرير شامل عن شركتك</p>
             </div>
             <div id="analysisContent" class="bg-white p-6 rounded-lg mb-6 shadow-lg"></div>
-            <button id="requestSolutionBtn" class="w-full btn-success text-white py-4 rounded-lg font-bold text-lg">
-                اطلب حلاً مخصصاً لهذه المشاكل ←
+            <button onclick="scrollToServices()" class="w-full btn-success text-white py-4 rounded-lg font-bold text-lg">
+                👇 اختر خدمة من القائمة
             </button>
         </div>
     </section>
@@ -147,7 +327,7 @@
             <form id="serviceRequestForm" class="space-y-4">
                 <div>
                     <label class="block text-gray-700 font-bold mb-2">نوع الخدمة المطلوبة</label>
-                    <select id="serviceType" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 transition">
+                    <select id="serviceType" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500">
                         <option value="web_basic">موقع إلكتروني أساسي</option>
                         <option value="web_ecommerce">متجر إلكتروني</option>
                         <option value="logo_basic">تصميم لوجو</option>
@@ -162,15 +342,15 @@
                 </div>
                 <div>
                     <label class="block text-gray-700 font-bold mb-2">وصف تفصيلي للمشكلة والحل المطلوب *</label>
-                    <textarea id="serviceDescription" required rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 transition" placeholder="اشرح المشكلة التي تم اكتشافها في التحليل والحل الذي تحتاجه..."></textarea>
+                    <textarea id="serviceDescription" required rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="اشرح المشكلة التي تم اكتشافها في التحليل والحل الذي تحتاجه..."></textarea>
                 </div>
                 <div>
                     <label class="block text-gray-700 font-bold mb-2">رقم الهاتف للتواصل *</label>
-                    <input type="tel" id="phoneNumber" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 transition" placeholder="+966 50 123 4567">
+                    <input type="tel" id="phoneNumber" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="+966 50 123 4567">
                 </div>
                 <div>
                     <label class="block text-gray-700 font-bold mb-2">البريد الإلكتروني (اختياري)</label>
-                    <input type="email" id="email" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 transition" placeholder="example@email.com">
+                    <input type="email" id="email" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="example@email.com">
                 </div>
                 <button type="submit" id="submitRequestBtn" class="w-full btn-primary text-white py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-2">
                     <span>إرسال الطلب</span>
@@ -190,7 +370,7 @@
             <div class="bg-purple-50 border-2 border-purple-200 rounded-lg p-3 mb-6">
                 <code id="dealId" class="text-purple-700 font-mono text-sm break-all"></code>
             </div>
-            <p class="text-gray-600 text-sm mb-6">سيقوم فريقنا بمراجعة طلبك والتواصل معك خلال 24-48 ساعة عبر الهاتف أو البريد الإلكتروني.</p>
+            <p class="text-gray-600 text-sm mb-6">سيقوم فريقنا بمراجعة طلبك والتواصل معك خلال 24-48 ساعة.</p>
             <button onclick="closeSuccessModal()" class="w-full btn-primary text-white py-3 rounded-lg font-bold">حسناً</button>
         </div>
     </div>
@@ -204,18 +384,20 @@
     <script>
         const API_URL = 'https://b2b-pipeline-pro-53.dfgfrggerrttt-maker.deno.net';
         let currentCompanyId = null;
-        let currentAnalysis = null;
+        let currentStep = 0;
+        const totalSteps = 5;
+        let surveyAnswers = {};
 
         const services = [
-            { id: 'web_basic', name: 'موقع إلكتروني أساسي', description: 'موقع 5 صفحات متجاوب مع جميع الأجهزة', price: '$799', duration: '7-10 أيام', icon: '' },
-            { id: 'web_ecommerce', name: 'متجر إلكتروني', description: 'متجر كامل مع نظام دفع إلكتروني', price: '$1,499', duration: '14-21 يوم', icon: '' },
-            { id: 'logo_basic', name: 'تصميم لوجو', description: '3 خيارات احترافية مع تعديلات', price: '$299', duration: '3-5 أيام', icon: '🎨' },
-            { id: 'logo_branding', name: 'هوية بصرية كاملة', description: 'لوجو + ألوان + خطوط + تطبيقات', price: '$699', duration: '7-10 أيام', icon: '✨' },
-            { id: 'menu_digital', name: 'منيو رقمي تفاعلي', description: 'للمطاعم والكافيهات مع QR Code', price: '$199', duration: '3-5 أيام', icon: '' },
-            { id: 'seo_basic', name: 'تحسين SEO', description: 'تحسين ظهور موقعك في جوجل', price: '$399', duration: '30 يوم', icon: '' },
-            { id: 'social_content', name: 'محتوى سوشيال ميديا', description: '15 منشور احترافي شهرياً', price: '$499/شهر', duration: 'مستمر', icon: '' },
-            { id: 'pdf_convert', name: 'تحويل ملفات PDF', description: 'تحويل وتنظيم الملفات', price: '$49/ملف', duration: '24-48 ساعة', icon: '📄' },
-            { id: 'email_automation', name: 'أتمتة البريد الإلكتروني', description: 'سلسلة رسائل ذكية للعملاء', price: '$299', duration: '5-7 أيام', icon: '' }
+            { id: 'web_basic', name: 'موقع إلكتروني أساسي', description: 'موقع 5 صفحات متجاوب مع جميع الأجهزة', icon: '🌐' },
+            { id: 'web_ecommerce', name: 'متجر إلكتروني', description: 'متجر كامل مع نظام دفع إلكتروني', icon: '🛒' },
+            { id: 'logo_basic', name: 'تصميم لوجو', description: '3 خيارات احترافية مع تعديلات', icon: '🎨' },
+            { id: 'logo_branding', name: 'هوية بصرية كاملة', description: 'لوجو + ألوان + خطوط + تطبيقات', icon: '✨' },
+            { id: 'menu_digital', name: 'منيو رقمي تفاعلي', description: 'للمطاعم والكافيهات مع QR Code', icon: '📋' },
+            { id: 'seo_basic', name: 'تحسين SEO', description: 'تحسين ظهور موقعك في جوجل', icon: '🔍' },
+            { id: 'social_content', name: 'محتوى سوشيال ميديا', description: '15 منشور احترافي شهرياً', icon: '📱' },
+            { id: 'pdf_convert', name: 'تحويل ملفات PDF', description: 'تحويل وتنظيم الملفات', icon: '' },
+            { id: 'email_automation', name: 'أتمتة البريد الإلكتروني', description: 'سلسلة رسائل ذكية للعملاء', icon: '📧' }
         ];
 
         function loadServices() {
@@ -225,33 +407,63 @@
                     <div class="text-4xl mb-3">${s.icon}</div>
                     <h3 class="font-bold text-lg mb-2 text-gray-800">${s.name}</h3>
                     <p class="text-gray-600 text-sm mb-3">${s.description}</p>
-                    <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-                        <span class="text-purple-600 font-bold">${s.price}</span>
-                        <span class="text-gray-500 text-xs">${s.duration}</span>
-                    </div>
                 </div>
             `).join('');
         }
 
-        document.getElementById('analysisForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('analyzeBtn');
+        function updateProgress() {
+            const progress = (currentStep / (totalSteps - 1)) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '%';
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.add('hidden'));
+            document.getElementById('step' + step).classList.remove('hidden');
+            currentStep = step;
+            updateProgress();
+        }
+
+        function nextStep() {
+            if (currentStep === 0) {
+                const name = document.getElementById('companyName').value;
+                const industry = document.getElementById('industry').value;
+                const country = document.getElementById('country').value;
+                
+                if (!name || !industry || !country) {
+                    alert('يرجى ملء جميع الحقول المطلوبة');
+                    return;
+                }
+            }
+            showStep(currentStep + 1);
+        }
+
+        function prevStep() {
+            if (currentStep > 0) showStep(currentStep - 1);
+        }
+
+        function selectOption(step, question, answer) {
+            surveyAnswers[`step${step}_q${question}`] = answer;
+            const buttons = event.target.parentElement.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        async function startAnalysis() {
+            const name = document.getElementById('companyName').value;
+            const industry = document.getElementById('industry').value;
+            const country = document.getElementById('country').value;
+            const website = document.getElementById('website').value || 'https://example.com';
+
+            const btn = event.target;
             btn.innerHTML = '<span class="loading"></span> جاري التحليل...';
             btn.disabled = true;
 
             try {
-                const data = {
-                    name: document.getElementById('companyName').value,
-                    industry: document.getElementById('industry').value,
-                    country: document.getElementById('country').value,
-                    employee_count: 10,
-                    website: document.getElementById('website').value || 'https://example.com'
-                };
-
                 const res1 = await fetch(`${API_URL}/api/v1/companies`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({ name, industry, country, employee_count: 10, website })
                 });
                 const result1 = await res1.json();
                 
@@ -265,21 +477,16 @@
                     const result2 = await res2.json();
                     
                     if (result2.success) {
-                        currentAnalysis = result2.data;
                         displayResults(result2.data);
-                    } else {
-                        alert('خطأ في التحليل: ' + (result2.error || 'Unknown error'));
                     }
-                } else {
-                    alert('خطأ: ' + (result1.error || 'فشل إنشاء الشركة'));
                 }
             } catch (error) {
                 alert('حدث خطأ: ' + error.message);
             } finally {
-                btn.innerHTML = '<span>ابدأ التحليل المجاني</span>';
+                btn.innerHTML = '🚀 ابدأ التحليل';
                 btn.disabled = false;
             }
-        });
+        }
 
         function displayResults(data) {
             const { analysis, signals } = data;
@@ -295,24 +502,23 @@
             analysis.opportunities.forEach(o => html += `<li>${o.opportunity}</li>`);
             html += '</ul></div>';
             
-            html += '<div><h5 class="font-bold text-blue-700 mb-2">⚡ مؤشرات الشراء:</h5>';
-            html += '<ul class="list-disc list-inside text-gray-700 space-y-1">';
-            signals.forEach(s => html += `<li>${s.description} (${s.confidence}%)</li>`);
-            html += '</ul></div>';
-            
             document.getElementById('analysisContent').innerHTML = html;
             document.getElementById('results').classList.remove('hidden');
-            
-            document.getElementById('requestSolutionBtn').onclick = openModal;
-            
-            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function openModal() {
-            if (!currentCompanyId) {
-                alert('يرجى إكمال التحليل أولاً');
-                return;
-            }
+        function scrollToServices() {
+            document.getElementById('services').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function skipToServices() {
+            document.getElementById('services').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function requestService(serviceId) {
+            const service = services.find(s => s.id === serviceId);
+            document.getElementById('serviceType').value = serviceId;
+            document.getElementById('serviceDescription').value = `أحتاج خدمة: ${service.name}\n\n`;
             document.getElementById('serviceModal').classList.remove('hidden');
         }
 
@@ -335,7 +541,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        company_id: currentCompanyId,
+                        company_id: currentCompanyId || '00000000-0000-0000-0000-000000000000',
                         service_id: document.getElementById('serviceType').value,
                         description: document.getElementById('serviceDescription').value,
                         phone: document.getElementById('phoneNumber').value,
@@ -358,31 +564,6 @@
             } finally {
                 btn.innerHTML = '<span>إرسال الطلب</span>';
                 btn.disabled = false;
-            }
-        });
-
-        function requestService(serviceId) {
-            if (!currentCompanyId) {
-                alert('يرجى إكمال التحليل أولاً في الأعلى');
-                document.getElementById('analyze').scrollIntoView({ behavior: 'smooth' });
-                return;
-            }
-
-            const service = services.find(s => s.id === serviceId);
-            document.getElementById('serviceType').value = serviceId;
-            document.getElementById('serviceDescription').value = `أحتاج خدمة: ${service.name}\n\n`;
-            openModal();
-        }
-
-        document.getElementById('serviceModal').addEventListener('click', (e) => {
-            if (e.target.id === 'serviceModal') {
-                closeModal();
-            }
-        });
-
-        document.getElementById('successModal').addEventListener('click', (e) => {
-            if (e.target.id === 'successModal') {
-                closeSuccessModal();
             }
         });
 

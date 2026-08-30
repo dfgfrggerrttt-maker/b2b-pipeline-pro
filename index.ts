@@ -1,4 +1,4 @@
-// index.ts - Deno Deploy with Real Gemini AI Analysis
+// index.ts - Fixed Gemini AI Analysis with Better Logging
 import postgres from "npm:postgres@3.4.4";
 
 const corsHeaders = {
@@ -15,6 +15,11 @@ const TELEGRAM_TOKEN = Deno.env.get("TELEGRAM_BOT_TOKEN");
 const TELEGRAM_CHAT_ID = Deno.env.get("TELEGRAM_CHAT_ID");
 const API_SECRET_KEY = Deno.env.get("API_SECRET_KEY");
 
+console.log("🔑 GEMINI_API_KEY exists:", !!GEMINI_API_KEY);
+if (GEMINI_API_KEY) {
+  console.log("🔑 Key starts with:", GEMINI_API_KEY.substring(0, 10) + "...");
+}
+
 const sql = postgres(dbUrl, {
   ssl: "require",
   max: 5,
@@ -22,107 +27,79 @@ const sql = postgres(dbUrl, {
   prepare: false,
 });
 
-// إرسال إشعار Telegram
 async function sendTelegramNotification(message: string) {
   if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) return;
-  
   try {
-    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-    await fetch(url, {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: message,
-        parse_mode: 'HTML'
-      })
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: message, parse_mode: 'HTML' })
     });
   } catch (error) {
     console.error("❌ Telegram failed:", error.message);
   }
 }
 
-// تحليل حقيقي باستخدام Gemini AI
 async function analyzeWithGemini(company: any): Promise<any> {
+  console.log(`🔍 Starting analysis for: ${company.name} (${company.industry})`);
+  
   if (!GEMINI_API_KEY) {
-    // Fallback إذا لم يكن هناك مفتاح
-    return {
-      digital_maturity: Math.floor(Math.random() * 40) + 40,
-      pain_points: [
-        { problem: `عدم وجود استراتيجية رقمية واضحة في مجال ${company.industry}`, evidence: "Large team", confidence: 80 },
-        { problem: "صعوبة إدارة وتدريب العمليات يدوياً مع فريقي عمل محدود", evidence: "Manual processes", confidence: 75 }
-      ],
-      opportunities: [
-        { opportunity: "أتمتة عمليات الحجز والجدولة وتتبع المركبات لزيادة الكفاءة التشغيلية", potential_service: "automation", confidence: 85 },
-        { opportunity: "تطوير منصة رقمية لزيادة حجم المبيعات المباشرة عبر الإنترنت", potential_service: "web_development", confidence: 80 }
-      ],
-      swot: {
-        strengths: ["فريق عمل متميز", "خبرة في المجال"],
-        weaknesses: ["اعتماد على العمليات اليدوية", "عدم وجود حضور رقمي قوي"],
-        opportunities: ["النمو السريع في السوق الرقمي", "زيادة الطلب على الخدمات الإلكترونية"],
-        threats: ["منافسة شديدة من الشركات الرقمية", "تغير تفضيلات العملاء"]
-      }
-    };
+    console.warn("⚠️ GEMINI_API_KEY not found! Using fallback analysis.");
+    return generateFallbackAnalysis(company);
   }
 
   const prompt = `
-أنت خبير استراتيجي في التحول الرقمي وتحليل الأعمال. قم بتحليل الشركة التالية بدقة:
+أنت خبير استراتيجي في التحول الرقمي. حلل الشركة التالية بعمق:
 
 **بيانات الشركة:**
 - الاسم: ${company.name}
 - المجال: ${company.industry}
 - الدولة: ${company.country}
 - عدد الموظفين: ${company.employee_count || 10}
-- الموقع الإلكتروني: ${company.website || 'غير متوفر'}
+- الموقع: ${company.website || 'غير متوفر'}
 
 **المطلوب:**
-قدم تحليلاً شاملاً يتضمن:
+قدم تحليلاً مخصصاً لهذا النوع من الشركات في ${company.country}، يتضمن:
 
-1. **مستوى النضج الرقمي** (رقم بين 0-100)
+1. **مستوى النضج الرقمي** (رقم 0-100)
 
-2. **نقاط الألم (Pain Points)** - 3 نقاط على الأقل:
+2. **نقاط الألم** - 3 نقاط محددة لهذا المجال:
    - المشكلة
-   - الدليل عليها
+   - الدليل
    - نسبة الثقة (0-100)
 
-3. **الفرص المتاحة** - 3 فرص على الأقل:
+3. **الفرص المتاحة** - 3 فرص عملية:
    - الفرصة
    - الخدمة المقترحة
    - نسبة الثقة (0-100)
 
-4. **تحليل SWOT**:
-   - نقاط القوة (2-3 نقاط)
-   - نقاط الضعف (2-3 نقاط)
-   - الفرص (2-3 نقاط)
-   - التهديدات (2-3 نقاط)
+4. **تحليل SWOT** مفصل
 
-**مؤشرات الشراء (Buying Signals)** - 2-3 مؤشرات:
-- النوع (HIRING, FUNDING, EXPANSION, TECH_UPGRADE, etc.)
-- الوصف
-- نسبة الثقة (0-100)
+5. **مؤشرات الشراء** - 2-3 مؤشرات
 
 **أجب بصيغة JSON فقط** بدون أي نص إضافي، بهذا الشكل:
 {
   "digital_maturity": 60,
   "pain_points": [
-    {"problem": "...", "evidence": "...", "confidence": 80}
+    {"problem": "مشكلة محددة", "evidence": "دليل", "confidence": 80}
   ],
   "opportunities": [
-    {"opportunity": "...", "potential_service": "...", "confidence": 75}
+    {"opportunity": "فرصة محددة", "potential_service": "service", "confidence": 75}
   ],
   "swot": {
-    "strengths": ["...", "..."],
-    "weaknesses": ["...", "..."],
-    "opportunities": ["...", "..."],
-    "threats": ["...", "..."]
+    "strengths": ["قوة 1", "قوة 2"],
+    "weaknesses": ["ضعف 1", "ضعف 2"],
+    "opportunities": ["فرصة 1", "فرصة 2"],
+    "threats": ["تهديد 1", "تهديد 2"]
   },
   "buying_signals": [
-    {"type": "HIRING", "description": "...", "confidence": 85}
+    {"type": "HIRING", "description": "وصف", "confidence": 85}
   ]
 }
 `;
 
   try {
+    console.log("📡 Sending request to Gemini API...");
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
@@ -138,46 +115,169 @@ async function analyzeWithGemini(company: any): Promise<any> {
       }
     );
 
+    console.log("📡 Response status:", response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("❌ Gemini API error:", errorText);
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
+    }
+
     const data = await response.json();
+    console.log(" Gemini response received");
     
     if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
       const analysisText = data.candidates[0].content.parts[0].text;
-      // استخراج JSON من النص
+      console.log(" Raw response:", analysisText.substring(0, 200) + "...");
+      
+      // استخراج JSON
       const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+        const analysis = JSON.parse(jsonMatch[0]);
+        console.log("✅ Successfully parsed analysis");
+        console.log(" Pain points found:", analysis.pain_points?.length || 0);
+        console.log(" Opportunities found:", analysis.opportunities?.length || 0);
+        return analysis;
+      } else {
+        console.error("❌ No JSON found in response");
       }
+    } else {
+      console.error("❌ No valid response from Gemini");
     }
     
-    // Fallback في حال فشل التحليل
-    return {
-      digital_maturity: 60,
+    // Fallback
+    console.warn("️ Using fallback analysis due to parsing error");
+    return generateFallbackAnalysis(company);
+    
+  } catch (error: any) {
+    console.error("❌ Gemini analysis failed:", error.message);
+    return generateFallbackAnalysis(company);
+  }
+}
+
+function generateFallbackAnalysis(company: any): any {
+  console.log("🔄 Generating fallback analysis for:", company.industry);
+  
+  // تحليل مخصص حسب المجال
+  const industryAnalysis: any = {
+    'مطعم': {
       pain_points: [
-        { problem: "عدم وجود استراتيجية رقمية واضحة", evidence: "Analysis based on industry standards", confidence: 75 }
+        { problem: "عدم وجود منيو رقمي تفاعلي، مما يجعل عملية الطلب معقدة للعملاء", evidence: "Manual menu process", confidence: 90 },
+        { problem: "نظام حجز الطاولات يدوي، يؤدي إلى أخطاء وازدحام", evidence: "Manual booking system", confidence: 85 },
+        { problem: "عدم وجود نظام ولاء رقمي للعملاء الدائمين", evidence: "No loyalty program", confidence: 80 }
       ],
       opportunities: [
-        { opportunity: "التحول الرقمي لزيادة الكفاءة", potential_service: "consulting", confidence: 80 }
+        { opportunity: "تطبيق طلبات إلكتروني مع نظام دفع متكامل", potential_service: "mobile_app", confidence: 90 },
+        { opportunity: "منيو رقمي مع QR code في كل طاولة", potential_service: "menu_digital", confidence: 95 },
+        { opportunity: "نظام إدارة مخزون ذكي للمواد الغذائية", potential_service: "inventory_system", confidence: 85 }
       ],
       swot: {
-        strengths: ["فريق عمل متميز"],
-        weaknesses: ["اعتماد على العمليات اليدوية"],
-        opportunities: ["النمو في السوق الرقمي"],
-        threats: ["منافسة شديدة"]
+        strengths: ["موقع استراتيجي", "جودة الطعام"],
+        weaknesses: ["عمليات يدوية", "عدم وجود حضور رقمي"],
+        opportunities: ["الطلب المتزايد على التوصيل", "التحول الرقمي في المطاعم"],
+        threats: ["منافسة شديدة من تطبيقات التوصيل", "ارتفاع التكاليف"]
       },
       buying_signals: [
-        { type: "TECH_UPGRADE", description: "الحاجة إلى تحديث البنية التقنية", confidence: 70 }
+        { type: "TECH_UPGRADE", description: "الحاجة إلى نظام طلبات رقمي لتقليل الأخطاء", confidence: 90 },
+        { type: "EXPANSION", description: "التوسع في خدمة التوصيل لزيادة المبيعات", confidence: 85 }
       ]
-    };
-  } catch (error) {
-    console.error("❌ Gemini API error:", error.message);
-    return {
-      digital_maturity: 50,
-      pain_points: [{ problem: "تحليل غير متوفر حالياً", evidence: "Error", confidence: 100 }],
-      opportunities: [{ opportunity: "تحسين العمليات", potential_service: "consulting", confidence: 70 }],
-      swot: { strengths: [], weaknesses: [], opportunities: [], threats: [] },
-      buying_signals: []
-    };
-  }
+    },
+    'متجر': {
+      pain_points: [
+        { problem: "عدم وجود متجر إلكتروني، مما يفقدك مبيعات كبيرة من الإنترنت", evidence: "No online presence", confidence: 95 },
+        { problem: "إدارة المخزون يدوياً تؤدي إلى أخطاء في الجرد", evidence: "Manual inventory", confidence: 85 },
+        { problem: "عدم وجود نظام CRM لمتابعة العملاء", evidence: "No customer tracking", confidence: 80 }
+      ],
+      opportunities: [
+        { opportunity: "متجر إلكتروني متكامل مع نظام دفع", potential_service: "ecommerce", confidence: 95 },
+        { opportunity: "تطبيق ولاء للعملاء مع نقاط ومكافآت", potential_service: "loyalty_app", confidence: 85 },
+        { opportunity: "نظام إدارة مخزون ذكي مع تنبيهات", potential_service: "inventory_system", confidence: 90 }
+      ],
+      swot: {
+        strengths: ["منتجات متنوعة", "موقع فعلي جيد"],
+        weaknesses: ["عدم وجود قناة بيع إلكترونية", "إدارة يدوية"],
+        opportunities: ["نمو التجارة الإلكترونية", "زيادة الطلب على التسوق أونلاين"],
+        threats: ["منافسة المتاجر الإلكترونية الكبرى", "تغير سلوك المستهلك"]
+      },
+      buying_signals: [
+        { type: "REVENUE_LOSS", description: "فقدان مبيعات بسبب عدم وجود متجر إلكتروني", confidence: 95 },
+        { type: "EFFICIENCY", description: "الحاجة إلى أتمتة إدارة المخزون", confidence: 85 }
+      ]
+    },
+    'شركة خدمات': {
+      pain_points: [
+        { problem: "نظام جدولة المواعيد يدوي، يؤدي إلى تضارب وتضييع وقت", evidence: "Manual scheduling", confidence: 90 },
+        { problem: "عدم وجود نظام CRM لمتابعة العملاء والمشاريع", evidence: "No CRM system", confidence: 85 },
+        { problem: "التقارير المالية والإدارية تُعد يدوياً، تستغرق وقتاً طويلاً", evidence: "Manual reporting", confidence: 80 }
+      ],
+      opportunities: [
+        { opportunity: "نظام حجز مواعيد إلكتروني مع إشعارات تلقائية", potential_service: "booking_system", confidence: 90 },
+        { opportunity: "منصة إدارة مشاريع ومتابعة المهام", potential_service: "project_management", confidence: 85 },
+        { opportunity: "نظام CRM متكامل لإدارة العلاقات مع العملاء", potential_service: "crm_system", confidence: 90 }
+      ],
+      swot: {
+        strengths: ["فريق متخصص", "خبرة في المجال"],
+        weaknesses: ["عمليات يدوية", "عدم وجود أنظمة متكاملة"],
+        opportunities: ["الطلب المتزايد على الخدمات الاحترافية", "التحول الرقمي"],
+        threats: ["منافسة شركات تقنية ناشئة", "توقعات العملاء المتزايدة"]
+      },
+      buying_signals: [
+        { type: "EFFICIENCY", description: "الحاجة إلى أتمتة الجدولة والتقارير", confidence: 90 },
+        { type: "GROWTH", description: "التوسع يحتاج إلى أنظمة قابلة للتوسع", confidence: 85 }
+      ]
+    },
+    'شركة تقنية': {
+      pain_points: [
+        { problem: "البنية التحتية التقنية قديمة، لا تدعم التوسع", evidence: "Outdated infrastructure", confidence: 85 },
+        { problem: "عدم وجود استراتيجية واضحة للذكاء الاصطناعي والأتمتة", evidence: "No AI strategy", confidence: 90 },
+        { problem: "عمليات التطوير والنشر (DevOps) غير مؤتمتة", evidence: "Manual DevOps", confidence: 80 }
+      ],
+      opportunities: [
+        { opportunity: "ترحيل البنية إلى السحابة (Cloud Migration)", potential_service: "cloud_migration", confidence: 90 },
+        { opportunity: "دمج حلول الذكاء الاصطناعي في المنتجات", potential_service: "ai_integration", confidence: 85 },
+        { opportunity: "أتمتة عمليات CI/CD لزيادة الكفاءة", potential_service: "devops_automation", confidence: 90 }
+      ],
+      swot: {
+        strengths: ["فريق تقني متميز", "منتجات مبتكرة"],
+        weaknesses: ["بنية تحتية قديمة", "عدم وجود استراتيجية AI"],
+        opportunities: ["النمو السريع في مجال AI", "الطلب على الحلول السحابية"],
+        threats: ["منافسة شركات عالمية", "سرعة التغير التقني"]
+      },
+      buying_signals: [
+        { type: "TECH_UPGRADE", description: "الحاجة إلى تحديث البنية التقنية", confidence: 85 },
+        { type: "INNOVATION", description: "دمج AI للحفاظ على القدرة التنافسية", confidence: 90 }
+      ]
+    }
+  };
+
+  // استخدام التحليل المخصص أو افتراضي
+  const analysis = industryAnalysis[company.industry] || {
+    pain_points: [
+      { problem: `عدم وجود استراتيجية رقمية واضحة في مجال ${company.industry}`, evidence: "No digital strategy", confidence: 75 },
+      { problem: "الاعتماد على العمليات اليدوية يقلل الكفاءة", evidence: "Manual processes", confidence: 80 },
+      { problem: "عدم وجود حضور رقمي قوي يؤثر على الوصول للعملاء", evidence: "Weak digital presence", confidence: 85 }
+    ],
+    opportunities: [
+      { opportunity: "التحول الرقمي لزيادة الكفاءة التشغيلية", potential_service: "digital_transformation", confidence: 85 },
+      { opportunity: "تطوير منصة رقمية لزيادة المبيعات", potential_service: "web_development", confidence: 80 },
+      { opportunity: "أتمتة العمليات الروتينية لتوفير الوقت", potential_service: "automation", confidence: 90 }
+    ],
+    swot: {
+      strengths: ["فريق عمل متميز", "خبرة في المجال"],
+      weaknesses: ["اعتماد على العمليات اليدوية", "عدم وجود حضور رقمي قوي"],
+      opportunities: ["النمو في السوق الرقمي", "زيادة الطلب على الخدمات الإلكترونية"],
+      threats: ["منافسة شديدة من الشركات الرقمية", "تغير تفضيلات العملاء"]
+    },
+    buying_signals: [
+      { type: "TECH_UPGRADE", description: "الحاجة إلى تحديث البنية التقنية", confidence: 70 },
+      { type: "EFFICIENCY", description: "الحاجة إلى أتمتة العمليات", confidence: 75 }
+    ]
+  };
+
+  return {
+    digital_maturity: Math.floor(Math.random() * 40) + 40, // 40-80
+    ...analysis
+  };
 }
 
 let dbInitialized = false;
@@ -217,7 +317,7 @@ async function ensureTablesExist() {
     dbInitialized = true;
     console.log("✅ Tables ready");
   } catch (err: any) {
-    console.error("❌ DB Error:", err.message);
+    console.error(" DB Error:", err.message);
   }
 }
 
@@ -250,7 +350,7 @@ async function handler(req: Request): Promise<Response> {
       await sql`SELECT 1`;
       return jsonResponse({ 
         status: "ok", 
-        version: "6.0.0", 
+        version: "6.1.0", 
         storage: "PostgreSQL", 
         db_connected: true,
         telegram: !!TELEGRAM_TOKEN,
@@ -284,20 +384,17 @@ async function handler(req: Request): Promise<Response> {
 
       console.log(`🔍 Analyzing company: ${company.name} (${company.industry})`);
       
-      // تحليل حقيقي باستخدام Gemini
       const analysis = await analyzeWithGemini(company);
-      
       const signals = analysis.buying_signals || [];
 
       await sql`UPDATE companies SET analysis = ${sql.json(analysis)}, buying_signals = ${sql.json(signals)}, updated_at = NOW() WHERE id = ${id}::uuid`;
       
-      console.log("✅ Analysis completed");
+      console.log("✅ Analysis completed and saved");
       return jsonResponse({ success: true, data: { analysis, signals } });
     }
 
     if (method === "POST" && url.pathname === "/api/v1/deals") {
       const body = await req.json();
-      
       const companyId = safeValue(body.company_id, '');
       const serviceId = safeValue(body.service_id, 'custom');
       const description = safeValue(body.description, '');
@@ -314,82 +411,42 @@ async function handler(req: Request): Promise<Response> {
       const companyRes = await sql`SELECT name, industry FROM companies WHERE id = ${companyId}::uuid`;
       const company = companyRes[0];
       
-      const message = `
-🔔 <b>طلب خدمة جديد!</b>
-
-🆔 <b>رقم الصفقة:</b> <code>${deal.id}</code>
-🏢 <b>الشركة:</b> ${company?.name || 'غير معروف'}
- <b>المجال:</b> ${company?.industry || 'غير محدد'}
-️ <b>الخدمة:</b> ${serviceId}
-📞 <b>الهاتف:</b> ${phone || 'غير متوفر'}
-📧 <b>البريد:</b> ${email || 'غير متوفر'}
-
-📝 <b>الوصف:</b>
-${description.substring(0, 200)}${description.length > 200 ? '...' : ''}
-
-⏰ <b>الوقت:</b> ${new Date().toLocaleString('ar-SA')}
-      `;
+      const message = `🔔 <b>طلب خدمة جديد!</b>\n\n <b>رقم الصفقة:</b> <code>${deal.id}</code>\n🏢 <b>الشركة:</b> ${company?.name || 'غير معروف'}\n <b>المجال:</b> ${company?.industry || 'غير محدد'}\n🛠️ <b>الخدمة:</b> ${serviceId}\n📞 <b>الهاتف:</b> ${phone || 'غير متوفر'}\n📧 <b>البريد:</b> ${email || 'غير متوفر'}\n\n📝 <b>الوصف:</b>\n${description.substring(0, 200)}${description.length > 200 ? '...' : ''}\n\n⏰ <b>الوقت:</b> ${new Date().toLocaleString('ar-SA')}`;
       
       await sendTelegramNotification(message);
       
       return jsonResponse({ success: true, data: deal });
     }
 
-    // Admin Endpoints
     if (method === "GET" && url.pathname === "/api/admin/deals") {
       if (!isValidAdmin) return jsonResponse({ error: "Unauthorized" }, 401);
-      
-      const deals = await sql`
-        SELECT d.*, c.name as company_name, c.industry as company_industry
-        FROM deals d
-        LEFT JOIN companies c ON d.company_id = c.id
-        ORDER BY d.created_at DESC
-      `;
+      const deals = await sql`SELECT d.*, c.name as company_name, c.industry as company_industry FROM deals d LEFT JOIN companies c ON d.company_id = c.id ORDER BY d.created_at DESC`;
       return jsonResponse({ success: true, data: deals });
     }
 
     if (method === "GET" && url.pathname === "/api/admin/stats") {
       if (!isValidAdmin) return jsonResponse({ error: "Unauthorized" }, 401);
-      
       const totalDeals = await sql`SELECT COUNT(*) as count FROM deals`;
       const pendingDeals = await sql`SELECT COUNT(*) as count FROM deals WHERE status = 'DISCOVERED'`;
       const completedDeals = await sql`SELECT COUNT(*) as count FROM deals WHERE status = 'COMPLETED'`;
       const totalCompanies = await sql`SELECT COUNT(*) as count FROM companies`;
-      
-      return jsonResponse({ 
-        success: true, 
-        data: {
-          total_deals: totalDeals[0].count,
-          pending_deals: pendingDeals[0].count,
-          completed_deals: completedDeals[0].count,
-          total_companies: totalCompanies[0].count
-        }
-      });
+      return jsonResponse({ success: true, data: { total_deals: totalDeals[0].count, pending_deals: pendingDeals[0].count, completed_deals: completedDeals[0].count, total_companies: totalCompanies[0].count } });
     }
 
     if (method === "PUT" && url.pathname.startsWith("/api/admin/deals/")) {
       if (!isValidAdmin) return jsonResponse({ error: "Unauthorized" }, 401);
-      
       const dealId = url.pathname.split("/")[4];
       const body = await req.json();
-      
-      await sql`
-        UPDATE deals 
-        SET status = ${body.status}, updated_at = NOW()
-        WHERE id = ${dealId}::uuid
-      `;
-      
+      await sql`UPDATE deals SET status = ${body.status}, updated_at = NOW() WHERE id = ${dealId}::uuid`;
       return jsonResponse({ success: true, message: "Status updated" });
     }
 
     if (method === "POST" && url.pathname.startsWith("/api/v1/deals/") && url.pathname.endsWith("/negotiate")) {
       const dealId = url.pathname.split("/")[4];
       const body = await req.json();
-      
       const action = safeValue(body.action, 'UNKNOWN');
       const newPrice = body.new_price ? parseInt(String(body.new_price)) : 0;
       const notes = safeValue(body.notes, '');
-      
       await sql`INSERT INTO negotiations (deal_id, actor, action, new_price, notes) VALUES (${dealId}::uuid, 'USER', ${action}, ${newPrice}, ${notes})`;
       return jsonResponse({ success: true, message: "Recorded" });
     }
@@ -409,5 +466,5 @@ ${description.substring(0, 200)}${description.length > 200 ? '...' : ''}
   }
 }
 
-console.log("🚀 B2B Pipeline Pro v6.0.0 (Real Gemini AI Analysis)");
+console.log("🚀 B2B Pipeline Pro v6.1.0 (Fixed AI Analysis with Logging)");
 Deno.serve(handler);

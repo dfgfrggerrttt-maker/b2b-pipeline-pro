@@ -30,16 +30,12 @@
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
             transition: all 0.3s ease;
         }
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(17, 153, 142, 0.4);
-        }
         .card-hover {
             transition: all 0.3s ease;
         }
         .card-hover:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
         }
         .fade-in {
             animation: fadeIn 0.5s ease-in;
@@ -60,10 +56,6 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-        .question-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-right: 4px solid #667eea;
-        }
         .option-btn {
             transition: all 0.3s ease;
         }
@@ -81,6 +73,10 @@
             background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
             transition: width 0.5s ease;
         }
+        .analysis-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -94,92 +90,98 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-800">B2B Pipeline Pro</h1>
-                    <p class="text-sm text-gray-600">تحليل ذكي بالذكاء الاصطناعي</p>
+                    <p class="text-sm text-gray-600">حلول تقنية ذكية لشركتك</p>
                 </div>
             </div>
-            <button onclick="skipToServices()" class="btn-primary text-white px-6 py-2 rounded-lg font-bold">طلب خدمة مباشرة</button>
         </div>
     </header>
 
-    <!-- Survey Section -->
-    <section id="survey" class="glass-effect rounded-2xl p-8 mb-6">
-        <div class="text-center mb-6">
-            <h2 class="text-3xl font-bold mb-2">🔍 تحليل شامل لشركتك</h2>
-            <p class="text-gray-600">أجب على هذه الأسئلة البسيطة للحصول على تقرير مخصص</p>
+    <!-- Services Section -->
+    <section id="services" class="glass-effect rounded-2xl p-8 mb-6">
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold mb-2">️ خدماتنا</h2>
+            <p class="text-gray-600">اختر الخدمة المناسبة لشركتك أو ابدأ بتحليل مجاني</p>
         </div>
+        
+        <div class="grid md:grid-cols-3 gap-6" id="servicesList"></div>
+    </section>
 
-        <!-- Progress Bar -->
-        <div class="mb-6">
-            <div class="flex justify-between text-sm text-gray-600 mb-2">
-                <span>التقدم</span>
-                <span id="progressText">0%</span>
+    <!-- Survey Modal (يظهر عند الضغط على التحليل) -->
+    <div id="surveyModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+        <div class="glass-effect rounded-2xl max-w-2xl w-full my-8 p-8 fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800"> تحليل شامل لشركتك</h3>
+                <button onclick="closeSurvey()" class="text-gray-500 hover:text-gray-700 text-3xl font-bold">✕</button>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-2">
-                <div id="progressBar" class="progress-bar h-2 rounded-full" style="width: 0%"></div>
-            </div>
-        </div>
 
-        <!-- Company Info (Step 0) -->
-        <div id="step0" class="step fade-in">
-            <h3 class="text-xl font-bold mb-4">📋 معلومات الشركة</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">اسم الشركة *</label>
-                    <input type="text" id="companyName" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="مثال: شركة النور">
+            <!-- Progress Bar -->
+            <div class="mb-6">
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>التقدم</span>
+                    <span id="progressText">0%</span>
                 </div>
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">المجال *</label>
-                    <select id="industry" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500">
-                        <option value="">اختر المجال</option>
-                        <option value="مطعم">مطعم / كافيه</option>
-                        <option value="متجر">متجر إلكتروني</option>
-                        <option value="خدمات">شركة خدمات</option>
-                        <option value="تقنية">شركة تقنية</option>
-                        <option value="تعليم">مؤسسة تعليمية</option>
-                        <option value="صحة">مركز صحي</option>
-                        <option value="أخرى">أخرى</option>
-                    </select>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="progressBar" class="progress-bar h-2 rounded-full" style="width: 0%"></div>
                 </div>
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">الدولة *</label>
-                    <input type="text" id="country" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="مثال: السعودية">
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-bold mb-2">الموقع الإلكتروني (اختياري)</label>
-                    <input type="url" id="website" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="https://example.com">
-                </div>
-                <button onclick="nextStep()" class="w-full btn-primary text-white py-4 rounded-lg font-bold text-lg">
-                    التالي ←
-                </button>
             </div>
-        </div>
 
-        <!-- Questions (Steps 1-4) -->
-        <div id="step1" class="step hidden fade-in">
-            <div class="question-card rounded-xl p-6 mb-4">
-                <h3 class="text-lg font-bold mb-4"> 1. المظهر الرقمي والهوية</h3>
-                
+            <!-- Step 0: Company Info -->
+            <div id="step0" class="step fade-in">
+                <h4 class="text-xl font-bold mb-4">📋 معلومات الشركة</h4>
                 <div class="space-y-4">
                     <div>
-                        <p class="font-bold mb-2">هل تصميم موقعك أو صفحاتك يبدو حديثاً ويعكس جودة خدماتك بدقة؟</p>
+                        <label class="block text-gray-700 font-bold mb-2">اسم الشركة *</label>
+                        <input type="text" id="companyName" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="مثال: شركة النور">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">المجال *</label>
+                        <select id="industry" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500">
+                            <option value="">اختر المجال</option>
+                            <option value="مطعم">مطعم / كافيه</option>
+                            <option value="متجر">متجر إلكتروني</option>
+                            <option value="خدمات">شركة خدمات</option>
+                            <option value="تقنية">شركة تقنية</option>
+                            <option value="تعليم">مؤسسة تعليمية</option>
+                            <option value="صحة">مركز صحي</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">الدولة *</label>
+                        <input type="text" id="country" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="مثال: السعودية">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">الموقع الإلكتروني (اختياري)</label>
+                        <input type="url" id="website" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="https://example.com">
+                    </div>
+                    <button onclick="nextStep()" class="w-full btn-primary text-white py-4 rounded-lg font-bold text-lg">
+                        التالي ←
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 1: Digital & Brand -->
+            <div id="step1" class="step hidden fade-in">
+                <h4 class="text-lg font-bold mb-4">🎨 1. المظهر الرقمي والهوية</h4>
+                <div class="space-y-4">
+                    <div>
+                        <p class="font-bold mb-2">هل تصميم موقعك أو صفحاتك يبدو حديثاً ويعكس جودة خدماتك؟</p>
                         <div class="grid grid-cols-3 gap-2">
                             <button onclick="selectOption(1, 1, 'نعم، حديث واحترافي')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">نعم</button>
                             <button onclick="selectOption(1, 1, 'متوسط، يحتاج تحسين')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">متوسط</button>
                             <button onclick="selectOption(1, 1, 'لا، قديم وغير احترافي')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">لا</button>
                         </div>
                     </div>
-                    
                     <div>
-                        <p class="font-bold mb-2">هل الشعار والألوان والرسالة التسويقية موحدة عبر جميع حساباتك؟</p>
+                        <p class="font-bold mb-2">هل الشعار والألوان والرسالة التسويقية موحدة؟</p>
                         <div class="grid grid-cols-3 gap-2">
                             <button onclick="selectOption(1, 2, 'نعم، موحدة تماماً')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">نعم</button>
                             <button onclick="selectOption(1, 2, 'جزئياً')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">جزئياً</button>
                             <button onclick="selectOption(1, 2, 'لا، غير موحدة')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">لا</button>
                         </div>
                     </div>
-                    
                     <div>
-                        <p class="font-bold mb-2">إذا دخل عميل جديد لموقعك، هل يفهم نشاطك خلال 5 ثوانٍ؟</p>
+                        <p class="font-bold mb-2">هل يفهم العميل نشاطك خلال 5 ثوانٍ من دخول الموقع؟</p>
                         <div class="grid grid-cols-3 gap-2">
                             <button onclick="selectOption(1, 3, 'نعم، واضح جداً')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">نعم</button>
                             <button onclick="selectOption(1, 3, 'إلى حد ما')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">إلى حد ما</button>
@@ -187,34 +189,30 @@
                         </div>
                     </div>
                 </div>
+                <div class="flex gap-2 mt-4">
+                    <button onclick="prevStep()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold">→ السابق</button>
+                    <button onclick="nextStep()" class="flex-1 btn-primary text-white py-3 rounded-lg font-bold">التالي ←</button>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="prevStep()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold">→ السابق</button>
-                <button onclick="nextStep()" class="flex-1 btn-primary text-white py-3 rounded-lg font-bold">التالي ←</button>
-            </div>
-        </div>
 
-        <div id="step2" class="step hidden fade-in">
-            <div class="question-card rounded-xl p-6 mb-4">
-                <h3 class="text-lg font-bold mb-4">⭐ 2. خدمة العملاء والانطباع العام</h3>
-                
+            <!-- Step 2: Customer Service -->
+            <div id="step2" class="step hidden fade-in">
+                <h4 class="text-lg font-bold mb-4">⭐ 2. خدمة العملاء والانطباع العام</h4>
                 <div class="space-y-4">
                     <div>
                         <p class="font-bold mb-2">ما هو التقييم الإجمالي لنشاطك على Google Maps؟</p>
                         <div class="grid grid-cols-5 gap-2">
-                            <button onclick="selectOption(2, 1, '5 نجوم')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">⭐⭐⭐⭐⭐</button>
-                            <button onclick="selectOption(2, 1, '4 نجوم')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">⭐⭐⭐⭐</button>
-                            <button onclick="selectOption(2, 1, '3 نجوم')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">⭐⭐⭐</button>
-                            <button onclick="selectOption(2, 1, 'نجمتين')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">⭐⭐</button>
-                            <button onclick="selectOption(2, 1, 'نجمة واحدة')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">⭐</button>
+                            <button onclick="selectOption(2, 1, '5 نجوم')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center text-sm">⭐⭐⭐⭐⭐</button>
+                            <button onclick="selectOption(2, 1, '4 نجوم')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center text-sm">⭐⭐⭐⭐</button>
+                            <button onclick="selectOption(2, 1, '3 نجوم')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center text-sm">⭐⭐⭐</button>
+                            <button onclick="selectOption(2, 1, 'نجمتين')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center text-sm">⭐⭐</button>
+                            <button onclick="selectOption(2, 1, 'نجمة واحدة')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center text-sm">⭐</button>
                         </div>
                     </div>
-                    
                     <div>
                         <p class="font-bold mb-2">ما هي أكثر شكوى تتكرر من العملاء؟</p>
-                        <textarea id="complaints" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="3" placeholder="اكتب الشكاوى المتكررة..."></textarea>
+                        <textarea id="complaints" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="2" placeholder="اكتب الشكاوى المتكررة..."></textarea>
                     </div>
-                    
                     <div>
                         <p class="font-bold mb-2">كم يستغرق فريقك للرد على استفسارات العملاء؟</p>
                         <div class="grid grid-cols-3 gap-2">
@@ -224,17 +222,15 @@
                         </div>
                     </div>
                 </div>
+                <div class="flex gap-2 mt-4">
+                    <button onclick="prevStep()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold">→ السابق</button>
+                    <button onclick="nextStep()" class="flex-1 btn-primary text-white py-3 rounded-lg font-bold">التالي ←</button>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="prevStep()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold">→ السابق</button>
-                <button onclick="nextStep()" class="flex-1 btn-primary text-white py-3 rounded-lg font-bold">التالي ←</button>
-            </div>
-        </div>
 
-        <div id="step3" class="step hidden fade-in">
-            <div class="question-card rounded-xl p-6 mb-4">
-                <h3 class="text-lg font-bold mb-4">️ 3. رحلة العميل وسهولة التعامل</h3>
-                
+            <!-- Step 3: Customer Journey -->
+            <div id="step3" class="step hidden fade-in">
+                <h4 class="text-lg font-bold mb-4">️ 3. رحلة العميل وسهولة التعامل</h4>
                 <div class="space-y-4">
                     <div>
                         <p class="font-bold mb-2">هل خطوات الطلب/الحجز واضحة وسهلة؟</p>
@@ -244,7 +240,6 @@
                             <button onclick="selectOption(3, 1, 'معقدة')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">معقدة</button>
                         </div>
                     </div>
-                    
                     <div>
                         <p class="font-bold mb-2">هل سياسات الأسعار والاسترجاع معلنة وواضحة؟</p>
                         <div class="grid grid-cols-3 gap-2">
@@ -253,7 +248,6 @@
                             <button onclick="selectOption(3, 2, 'لا، غير واضحة')" class="option-btn border-2 border-gray-300 rounded-lg p-3 text-center">لا</button>
                         </div>
                     </div>
-                    
                     <div>
                         <p class="font-bold mb-2">هل توجد آلية لمتابعة العميل بعد الخدمة؟</p>
                         <div class="grid grid-cols-3 gap-2">
@@ -263,23 +257,20 @@
                         </div>
                     </div>
                 </div>
+                <div class="flex gap-2 mt-4">
+                    <button onclick="prevStep()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold">→ السابق</button>
+                    <button onclick="nextStep()" class="flex-1 btn-primary text-white py-3 rounded-lg font-bold">التالي ←</button>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="prevStep()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold">→ السابق</button>
-                <button onclick="nextStep()" class="flex-1 btn-primary text-white py-3 rounded-lg font-bold">التالي ←</button>
-            </div>
-        </div>
 
-        <div id="step4" class="step hidden fade-in">
-            <div class="question-card rounded-xl p-6 mb-4">
-                <h3 class="text-lg font-bold mb-4">🏆 4. المقارنة مع المنافسين</h3>
-                
+            <!-- Step 4: Competitors -->
+            <div id="step4" class="step hidden fade-in">
+                <h4 class="text-lg font-bold mb-4">🏆 4. المقارنة مع المنافسين</h4>
                 <div class="space-y-4">
                     <div>
                         <p class="font-bold mb-2">ما هي الميزة التي تجعل العميل يختارك بدلاً من منافسيك؟</p>
-                        <textarea id="advantage" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="3" placeholder="اكتب ميزتك التنافسية..."></textarea>
+                        <textarea id="advantage" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg" rows="2" placeholder="اكتب ميزتك التنافسية..."></textarea>
                     </div>
-                    
                     <div>
                         <p class="font-bold mb-2">هل مظهر صفحاتك أكثر احترافية من منافسيك؟</p>
                         <div class="grid grid-cols-3 gap-2">
@@ -289,41 +280,34 @@
                         </div>
                     </div>
                 </div>
+                <div class="flex gap-2 mt-4">
+                    <button onclick="prevStep()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold">→ السابق</button>
+                    <button onclick="startAnalysis()" id="analyzeBtn" class="flex-1 btn-success text-white py-3 rounded-lg font-bold"> ابدأ التحليل</button>
+                </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="prevStep()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg font-bold">→ السابق</button>
-                <button onclick="startAnalysis()" class="flex-1 btn-success text-white py-3 rounded-lg font-bold">🚀 ابدأ التحليل</button>
+
+            <!-- Results -->
+            <div id="results" class="hidden fade-in">
+                <div class="bg-green-50 border-r-4 border-green-500 p-4 rounded-lg mb-6">
+                    <h3 class="font-bold text-green-800 mb-1">✅ تم التحليل بنجاح!</h3>
+                    <p class="text-green-700 text-sm">إليك تقرير شامل عن شركتك</p>
+                </div>
+                <div id="analysisContent" class="bg-white p-6 rounded-lg mb-6 shadow-lg"></div>
+                <button onclick="closeSurvey(); scrollToServices();" class="w-full btn-success text-white py-4 rounded-lg font-bold text-lg">
+                    👇 اختر خدمة من القائمة
+                </button>
             </div>
         </div>
-
-        <!-- Results -->
-        <div id="results" class="hidden fade-in">
-            <div class="bg-green-50 border-r-4 border-green-500 p-4 rounded-lg mb-6">
-                <h3 class="font-bold text-green-800 mb-1">✅ تم التحليل بنجاح!</h3>
-                <p class="text-green-700 text-sm">إليك تقرير شامل عن شركتك</p>
-            </div>
-            <div id="analysisContent" class="bg-white p-6 rounded-lg mb-6 shadow-lg"></div>
-            <button onclick="scrollToServices()" class="w-full btn-success text-white py-4 rounded-lg font-bold text-lg">
-                👇 اختر خدمة من القائمة
-            </button>
-        </div>
-    </section>
-
-    <!-- Services Grid -->
-    <section id="services" class="glass-effect rounded-2xl p-8 mb-6">
-        <h2 class="text-3xl font-bold text-center mb-2">🛠️ خدماتنا</h2>
-        <p class="text-center text-gray-600 mb-6">اختر الخدمة المناسبة لشركتك</p>
-        <div class="grid md:grid-cols-3 gap-6" id="servicesList"></div>
-    </section>
+    </div>
 
     <!-- Service Request Modal -->
     <div id="serviceModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="glass-effect rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 fade-in">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-800">طلب تنفيذ خدمة / حل</h3>
-                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-3xl font-bold">✕</button>
+                <h3 class="text-2xl font-bold text-gray-800">طلب تنفيذ خدمة</h3>
+                <button onclick="closeServiceModal()" class="text-gray-500 hover:text-gray-700 text-3xl font-bold">✕</button>
             </div>
-            <p class="text-gray-600 mb-6">سيتم إنشاء صفقة جديدة في النظام وتوجيه فريق العمل لمتابعتها فوراً.</p>
+            <p class="text-gray-600 mb-6">سيتم إنشاء صفقة جديدة وتوجيه فريق العمل لمتابعتها فوراً.</p>
             <form id="serviceRequestForm" class="space-y-4">
                 <div>
                     <label class="block text-gray-700 font-bold mb-2">نوع الخدمة المطلوبة</label>
@@ -342,7 +326,7 @@
                 </div>
                 <div>
                     <label class="block text-gray-700 font-bold mb-2">وصف تفصيلي للمشكلة والحل المطلوب *</label>
-                    <textarea id="serviceDescription" required rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="اشرح المشكلة التي تم اكتشافها في التحليل والحل الذي تحتاجه..."></textarea>
+                    <textarea id="serviceDescription" required rows="4" class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500" placeholder="اشرح المشكلة والحل الذي تحتاجه..."></textarea>
                 </div>
                 <div>
                     <label class="block text-gray-700 font-bold mb-2">رقم الهاتف للتواصل *</label>
@@ -389,26 +373,58 @@
         let surveyAnswers = {};
 
         const services = [
+            { id: 'analysis', name: 'تحليل شامل مجاني', description: 'استبيان ذكي يكشف نقاط الضعف والفرص لشركتك', icon: '🔍', special: true },
             { id: 'web_basic', name: 'موقع إلكتروني أساسي', description: 'موقع 5 صفحات متجاوب مع جميع الأجهزة', icon: '🌐' },
             { id: 'web_ecommerce', name: 'متجر إلكتروني', description: 'متجر كامل مع نظام دفع إلكتروني', icon: '🛒' },
             { id: 'logo_basic', name: 'تصميم لوجو', description: '3 خيارات احترافية مع تعديلات', icon: '🎨' },
             { id: 'logo_branding', name: 'هوية بصرية كاملة', description: 'لوجو + ألوان + خطوط + تطبيقات', icon: '✨' },
-            { id: 'menu_digital', name: 'منيو رقمي تفاعلي', description: 'للمطاعم والكافيهات مع QR Code', icon: '📋' },
-            { id: 'seo_basic', name: 'تحسين SEO', description: 'تحسين ظهور موقعك في جوجل', icon: '🔍' },
+            { id: 'menu_digital', name: 'منيو رقمي تفاعلي', description: 'للمطاعم والكافيهات مع QR Code', icon: '' },
+            { id: 'seo_basic', name: 'تحسين SEO', description: 'تحسين ظهور موقعك في جوجل', icon: '' },
             { id: 'social_content', name: 'محتوى سوشيال ميديا', description: '15 منشور احترافي شهرياً', icon: '📱' },
-            { id: 'pdf_convert', name: 'تحويل ملفات PDF', description: 'تحويل وتنظيم الملفات', icon: '' },
+            { id: 'pdf_convert', name: 'تحويل ملفات PDF', description: 'تحويل وتنظيم الملفات', icon: '📄' },
             { id: 'email_automation', name: 'أتمتة البريد الإلكتروني', description: 'سلسلة رسائل ذكية للعملاء', icon: '📧' }
         ];
 
         function loadServices() {
             const container = document.getElementById('servicesList');
-            container.innerHTML = services.map(s => `
-                <div class="card-hover bg-white border-2 border-gray-100 rounded-xl p-6 cursor-pointer" onclick="requestService('${s.id}')">
-                    <div class="text-4xl mb-3">${s.icon}</div>
-                    <h3 class="font-bold text-lg mb-2 text-gray-800">${s.name}</h3>
-                    <p class="text-gray-600 text-sm mb-3">${s.description}</p>
-                </div>
-            `).join('');
+            container.innerHTML = services.map(s => {
+                if (s.special) {
+                    return `
+                        <div class="card-hover analysis-card rounded-xl p-6 cursor-pointer border-2 border-purple-300" onclick="openSurvey()">
+                            <div class="text-5xl mb-3">${s.icon}</div>
+                            <h3 class="font-bold text-xl mb-2">${s.name}</h3>
+                            <p class="text-white/90 text-sm mb-3">${s.description}</p>
+                            <div class="bg-white/20 rounded-lg px-3 py-1 inline-block text-sm font-bold">
+                                مجاني 100%
+                            </div>
+                        </div>
+                    `;
+                }
+                return `
+                    <div class="card-hover bg-white border-2 border-gray-100 rounded-xl p-6 cursor-pointer" onclick="requestService('${s.id}')">
+                        <div class="text-4xl mb-3">${s.icon}</div>
+                        <h3 class="font-bold text-lg mb-2 text-gray-800">${s.name}</h3>
+                        <p class="text-gray-600 text-sm mb-3">${s.description}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openSurvey() {
+            document.getElementById('surveyModal').classList.remove('hidden');
+            showStep(0);
+        }
+
+        function closeSurvey() {
+            document.getElementById('surveyModal').classList.add('hidden');
+        }
+
+        function closeServiceModal() {
+            document.getElementById('serviceModal').classList.add('hidden');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
         }
 
         function updateProgress() {
@@ -429,13 +445,12 @@
                 const name = document.getElementById('companyName').value;
                 const industry = document.getElementById('industry').value;
                 const country = document.getElementById('country').value;
-                
                 if (!name || !industry || !country) {
                     alert('يرجى ملء جميع الحقول المطلوبة');
                     return;
                 }
             }
-            showStep(currentStep + 1);
+            if (currentStep < 4) showStep(currentStep + 1);
         }
 
         function prevStep() {
@@ -455,7 +470,7 @@
             const country = document.getElementById('country').value;
             const website = document.getElementById('website').value || 'https://example.com';
 
-            const btn = event.target;
+            const btn = document.getElementById('analyzeBtn');
             btn.innerHTML = '<span class="loading"></span> جاري التحليل...';
             btn.disabled = true;
 
@@ -478,7 +493,11 @@
                     
                     if (result2.success) {
                         displayResults(result2.data);
+                    } else {
+                        alert('خطأ في التحليل: ' + (result2.error || 'Unknown'));
                     }
+                } else {
+                    alert('خطأ: ' + (result1.error || 'فشل إنشاء الشركة'));
                 }
             } catch (error) {
                 alert('حدث خطأ: ' + error.message);
@@ -489,10 +508,13 @@
         }
 
         function displayResults(data) {
+            document.querySelectorAll('.step').forEach(s => s.classList.add('hidden'));
+            document.getElementById('results').classList.remove('hidden');
+            
             const { analysis, signals } = data;
             let html = '<h4 class="font-bold text-xl mb-4 text-gray-800">📊 نتائج التحليل</h4>';
             
-            html += '<div class="mb-4"><h5 class="font-bold text-purple-700 mb-2"> نقاط الضعف المكتشفة:</h5>';
+            html += '<div class="mb-4"><h5 class="font-bold text-red-700 mb-2">⚠️ نقاط الضعف المكتشفة:</h5>';
             html += '<ul class="list-disc list-inside text-gray-700 space-y-1">';
             analysis.pain_points.forEach(p => html += `<li>${p.problem}</li>`);
             html += '</ul></div>';
@@ -501,17 +523,18 @@
             html += '<ul class="list-disc list-inside text-gray-700 space-y-1">';
             analysis.opportunities.forEach(o => html += `<li>${o.opportunity}</li>`);
             html += '</ul></div>';
+
+            if (signals && signals.length > 0) {
+                html += '<div><h5 class="font-bold text-blue-700 mb-2">⚡ مؤشرات الشراء:</h5>';
+                html += '<ul class="list-disc list-inside text-gray-700 space-y-1">';
+                signals.forEach(s => html += `<li>${s.description} (${s.confidence}%)</li>`);
+                html += '</ul></div>';
+            }
             
             document.getElementById('analysisContent').innerHTML = html;
-            document.getElementById('results').classList.remove('hidden');
-            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
         }
 
         function scrollToServices() {
-            document.getElementById('services').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function skipToServices() {
             document.getElementById('services').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -520,14 +543,6 @@
             document.getElementById('serviceType').value = serviceId;
             document.getElementById('serviceDescription').value = `أحتاج خدمة: ${service.name}\n\n`;
             document.getElementById('serviceModal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('serviceModal').classList.add('hidden');
-        }
-
-        function closeSuccessModal() {
-            document.getElementById('successModal').classList.add('hidden');
         }
 
         document.getElementById('serviceRequestForm').addEventListener('submit', async (e) => {
@@ -552,7 +567,7 @@
                 const result = await res.json();
                 
                 if (result.success) {
-                    closeModal();
+                    closeServiceModal();
                     document.getElementById('dealId').textContent = result.data.id;
                     document.getElementById('successModal').classList.remove('hidden');
                     document.getElementById('serviceRequestForm').reset();
@@ -565,6 +580,17 @@
                 btn.innerHTML = '<span>إرسال الطلب</span>';
                 btn.disabled = false;
             }
+        });
+
+        // إغلاق المودال عند النقر خارجه
+        document.getElementById('surveyModal').addEventListener('click', (e) => {
+            if (e.target.id === 'surveyModal') closeSurvey();
+        });
+        document.getElementById('serviceModal').addEventListener('click', (e) => {
+            if (e.target.id === 'serviceModal') closeServiceModal();
+        });
+        document.getElementById('successModal').addEventListener('click', (e) => {
+            if (e.target.id === 'successModal') closeSuccessModal();
         });
 
         loadServices();
